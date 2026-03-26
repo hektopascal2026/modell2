@@ -263,8 +263,8 @@ function App() {
   }, [simulation]);
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-[1200px] flex-col gap-4 p-4 xl:flex-row">
-      <aside className="w-full border-2 border-black bg-white p-4 xl:sticky xl:top-4 xl:h-[calc(100vh-2rem)] xl:max-w-md xl:overflow-y-auto">
+    <main className="mx-auto flex min-h-screen w-full max-w-[1800px] flex-col gap-4 p-4 2xl:px-8 xl:flex-row">
+      <aside className="w-full border-2 border-black bg-white p-4 xl:sticky xl:top-4 xl:h-[calc(100vh-2rem)] xl:w-[320px] xl:flex-none xl:overflow-y-auto">
         <h1 className="text-[18px] font-bold text-black md:text-[18px]">Finanzmodell Hektopascal</h1>
         <p className="mt-1 text-xs font-normal text-black">Interaktive Planung für 48 Monate (CHF).</p>
 
@@ -370,7 +370,7 @@ function App() {
         </div>
       </aside>
 
-      <section className="w-full space-y-4">
+      <section className="w-full min-w-0 space-y-4 xl:flex-1">
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <KPI
             title="Break-even (operativ)"
@@ -425,7 +425,7 @@ function App() {
         <article className="border-2 border-black bg-white p-4 transition-shadow hover:shadow-[2px_2px_0px_#000]">
           <h2 className="text-[16px] font-bold text-black">Kundenwachstum</h2>
           <p className="text-sm font-normal text-black">Aktive Kundenentwicklung über 48 Monate.</p>
-          <div className="mt-4 h-96">
+          <div className="mt-4 h-[28rem] 2xl:h-[32rem]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={simulation} margin={{ top: 12, right: 12, left: 8, bottom: 8 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#cfcfcf" />
@@ -433,6 +433,7 @@ function App() {
                   dataKey="month"
                   tick={{ fontSize: 14, fill: "#000000" }}
                   label={{ value: "Monat", position: "insideBottom", offset: -4 }}
+                  minTickGap={18}
                 />
                 <YAxis tick={{ fontSize: 14, fill: "#000000" }} width={56} />
                 {breakEvenMonat != null && (
@@ -466,11 +467,11 @@ function App() {
           <p className="text-sm font-normal text-black">
             Einnahmen, Ausgaben, Cashbestand und Mindestliquidität (100&apos;000 CHF + Löhne für 3 Monate voraus). Die grüne Linie markiert Break-even (Einnahmen = Ausgaben).
           </p>
-          <div className="mt-4 h-[32rem]">
+          <div className="mt-4 h-[34rem] 2xl:h-[38rem]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={simulation} margin={{ top: 12, right: 26, left: 10, bottom: 10 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#cfcfcf" />
-                <XAxis dataKey="month" tick={{ fontSize: 14, fill: "#000000" }} />
+                <XAxis dataKey="month" tick={{ fontSize: 14, fill: "#000000" }} minTickGap={18} />
                 <YAxis
                   yAxisId="left"
                   tick={{ fontSize: 14, fill: "#000000" }}
@@ -547,11 +548,11 @@ function App() {
           <p className="text-sm font-normal text-black">
             Zeigt, welches Startkapital nötig wäre, um die Mindestliquidität genau in einem bestimmten Monat zu berühren.
           </p>
-          <div className="mt-4 h-[26rem]">
+          <div className="mt-4 h-[30rem] 2xl:h-[34rem]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={kapitalAnalyse.chartData} margin={{ top: 12, right: 26, left: 10, bottom: 10 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#cfcfcf" />
-                <XAxis dataKey="month" tick={{ fontSize: 14, fill: "#000000" }} />
+                <XAxis dataKey="month" tick={{ fontSize: 14, fill: "#000000" }} minTickGap={18} />
                 <YAxis
                   tick={{ fontSize: 14, fill: "#000000" }}
                   tickFormatter={axisCurrencyFormatter}
@@ -586,87 +587,38 @@ function App() {
         </article>
 
         <article className="border-2 border-black bg-[#F5F5F5] p-4">
-          <h2 className="text-[16px] font-bold text-black">Fußnote: Modellrisiko Preislogik</h2>
-          <div className="mt-2 space-y-2 text-sm text-black">
-            <p className="font-semibold">1. Die große Falle: Der „Instant Price Hike“ (Kohorten-Fehler)</p>
-            <p>
-              Aktuell wird bei der Umsatzlogik implizit angenommen, dass ab Jahr 2 alle aktiven Kunden den neuen Preis bezahlen.
-              Dadurch entsteht in Monat 13 ein unnatürlicher MRR-Sprung.
-            </p>
-            <p>
-              In der Realität behalten frühe Kunden oft ihren alten Tarif (Grandfathering) oder es braucht bei erzwungenem Upgrade
-              einen zusätzlichen einmaligen Churn-Effekt.
-            </p>
-            <p>
-              Empfehlung für ein simples Modell: mit einem Blended ARPU arbeiten. Für höhere Genauigkeit zwei Kohorten tracken:
-              „Kunden zu 50 CHF“ und „Kunden zu 80 CHF“.
-            </p>
-          </div>
-        </article>
-
-        <article className="border-2 border-black bg-[#F5F5F5] p-4">
-          <h2 className="text-[16px] font-bold text-black">Fußnote: Liquiditäts-Floor</h2>
-          <div className="mt-2 space-y-2 text-sm text-black">
-            <p>
-              Der Liquiditäts-Floor ist definiert als <span className="font-semibold">100&apos;000 CHF Reserve + 3 Monatslöhne</span>
-              (basierend auf Personalkosten/FTE) und wird monatlich gegen den Cashbestand geprüft.
-            </p>
-            <p>
-              Wichtig: <span className="font-semibold">Sachkosten sind im Floor aktuell nicht enthalten</span>. Der Floor sichert damit
-              explizit Reserven und Lohnfähigkeit, nicht die vollen Gesamtausgaben.
-            </p>
-          </div>
-        </article>
-
-        <article className="border-2 border-black bg-[#F5F5F5] p-4">
-          <h2 className="text-[16px] font-bold text-black">Fußnote: Cashflow vs. MRR</h2>
-          <div className="mt-2 space-y-2 text-sm text-black">
-            <p className="font-semibold">Abbildung im Modell: Annual Upfront für Lizenzen</p>
-            <p>
-              Der Cashbestand verwendet für Lizenzen jetzt eine jährliche Vorauszahlung: Bei Neukauf und jeder Verlängerung
-              fließt der Jahresbetrag direkt als Cash ein (Preis × 12 Monate).
-            </p>
-            <p>
-              Gleichzeitig bleibt MRR als monatliche Umsatzsicht im Modell erhalten. Dadurch können MRR-Entwicklung und
-              Cashflow bewusst voneinander abweichen.
-            </p>
-            <p>
-              Falls das Geschäft stattdessen monatlich fakturiert, müsste der Cashbestand wieder auf monatliche Lizenzzahlungen
-              umgestellt werden.
-            </p>
-          </div>
-        </article>
-
-        <article className="border-2 border-black bg-[#F5F5F5] p-4">
-          <h2 className="text-[16px] font-bold text-black">Fußnote: Unsterbliche Kohorten (Churn-Risiko)</h2>
-          <div className="mt-2 space-y-2 text-sm text-black">
-            <p className="font-semibold">Aktuelle Modellierung: Renewal-Drop nur in Monat 12/24/36</p>
-            <p>
-              Das Modell reduziert Kohorten erst an den Verlängerungspunkten. Dazwischen bleibt die Kohortengröße konstant,
-              was zu einem Sägezahn-Muster führen kann.
-            </p>
-            <p>
-              In der Realität kann auch bei Jahresverträgen unterjähriger Churn auftreten (z. B. Unternehmensschließung,
-              Ansprechpartnerwechsel, Sonderkündigungen).
-            </p>
-            <p>
-              Für höhere Realitätsnähe wäre eine Kombination aus geringem monatlichen Churn plus jährlichem Renewal-Drop möglich.
-            </p>
-          </div>
-        </article>
-
-        <article className="border-2 border-black bg-[#F5F5F5] p-4">
-          <h2 className="text-[16px] font-bold text-black">Fußnote: Null-FTE gleich Null-Sachkosten</h2>
-          <div className="mt-2 space-y-2 text-sm text-black">
-            <p className="font-semibold">Aktuelle Modellierung: Sachkosten als Aufschlag auf Personalkosten</p>
-            <p>
-              Mit aktivierter 80/20-Logik werden Sachkosten als 25% der Personalkosten berechnet. Bei sehr niedrigen FTE-Zahlen
-              sind damit auch Sachkosten sehr niedrig.
-            </p>
-            <p>
-              In der Praxis entstehen oft fixe Startkosten unabhängig von FTE (z. B. Software-Lizenzen, Rechtskosten, Gründung,
-              Marktforschung), die in dieser Logik nicht automatisch erfasst sind.
-            </p>
+          <h2 className="text-[16px] font-bold text-black">Fussnoten</h2>
+          <div className="mt-3 space-y-3 text-sm text-black">
+            <div>
+              <p className="font-semibold">Anmerkungen</p>
+              <p>
+                <span className="font-semibold">Liquiditäts-Floor:</span> Im Modell ist der Floor
+                <span className="font-semibold"> 100&apos;000 CHF + 3 Monatslöhne</span>. Sachkosten sind dabei nicht enthalten.
+              </p>
+              <p>
+                <span className="font-semibold">Preislogik:</span> Kunden zahlen im ersten Vertragsjahr den Jahr-1-Preis und ab der
+                ersten Verlängerung den Preis ab Jahr 2.
+              </p>
+            </div>
+            <div>
+              <p className="font-semibold">Vereinfachungen</p>
+              <p>
+                <span className="font-semibold">Null-FTE = niedrige Sachkosten:</span> Bei 80/20 sinken Sachkosten mit den FTEs mit.
+                Feste Startkosten (z. B. Recht, Setup, Lizenzen) sind nicht automatisch drin.
+              </p>
+              <p>
+                <span className="font-semibold">Kein Blended ARPU:</span> Das Modell nutzt feste Preise je Kohortenalter statt eines
+                gemischten Durchschnittspreises.
+              </p>
+              <p>
+                <span className="font-semibold">Unsterbliche Kohorten:</span> Kündigungen passieren nur zu Verlängerungszeitpunkten
+                (12/24/36 Monate), nicht laufend unter dem Jahr.
+              </p>
+              <p>
+                <span className="font-semibold">Cashflow vs. MRR:</span> Cash nutzt Annual Upfront (Jahreszahlung sofort), MRR zeigt
+                den monatlichen Umsatz. Beides kann daher bewusst auseinanderlaufen.
+              </p>
+            </div>
           </div>
         </article>
       </section>
