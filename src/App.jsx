@@ -94,7 +94,7 @@ function KPI({ title, value, helpText }) {
 }
 
 function App() {
-  const [startkapital, setStartkapital] = useState(150000);
+  const [startkapital, setStartkapital] = useState(1500000);
   const [neueKundenJ1, setNeueKundenJ1] = useState(40);
   const [neueKundenJ2, setNeueKundenJ2] = useState(80);
   const [neueKundenJ3, setNeueKundenJ3] = useState(120);
@@ -103,13 +103,13 @@ function App() {
   const [verlaengerungNachJ1, setVerlaengerungNachJ1] = useState(85);
   const [verlaengerungNachJ2, setVerlaengerungNachJ2] = useState(90);
   const [verlaengerungNachJ3, setVerlaengerungNachJ3] = useState(92);
-  const [sponsoringJahr1, setSponsoringJahr1] = useState(10000);
+  const [sponsoringJahr1, setSponsoringJahr1] = useState(0);
   const [sponsoringJahr2, setSponsoringJahr2] = useState(10000);
   const [sponsoringJahr3, setSponsoringJahr3] = useState(10000);
   const [sponsoringJahr4, setSponsoringJahr4] = useState(10000);
-  const [fteJ1, setFteJ1] = useState(4);
-  const [fteJ2, setFteJ2] = useState(8);
-  const [fteJ3, setFteJ3] = useState(12);
+  const [fteJ1, setFteJ1] = useState(9);
+  const [fteJ2, setFteJ2] = useState(12);
+  const [fteJ3, setFteJ3] = useState(17);
   const [avgLohn, setAvgLohn] = useState(8000);
   const [sachkostenAuto, setSachkostenAuto] = useState(true);
   const [fixkostenManuell, setFixkostenManuell] = useState(8000);
