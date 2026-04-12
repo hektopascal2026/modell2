@@ -339,9 +339,9 @@ function App() {
               Ausgaben-Treiber
             </summary>
             <div className="grid gap-4 border-t-2 border-black px-4 py-4">
-              <LabeledSliderInput label="FTE Jahr 1" value={fteJ1} onChange={setFteJ1} min={0} max={30} />
-              <LabeledSliderInput label="FTE Jahr 2" value={fteJ2} onChange={setFteJ2} min={0} max={40} />
-              <LabeledSliderInput label="FTE Jahr 3" value={fteJ3} onChange={setFteJ3} min={0} max={50} />
+              <LabeledSliderInput label="FTE Jahr 1" value={fteJ1} onChange={setFteJ1} min={0} max={20} />
+              <LabeledSliderInput label="FTE Jahr 2" value={fteJ2} onChange={setFteJ2} min={0} max={20} />
+              <LabeledSliderInput label="FTE Jahr 3" value={fteJ3} onChange={setFteJ3} min={0} max={20} />
               <LabeledNumberInput
                 label="Durchschnittslohn pro FTE/Monat (CHF)"
                 value={avgLohn}
