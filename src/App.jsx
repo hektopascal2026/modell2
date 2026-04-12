@@ -100,6 +100,7 @@ function App() {
   const [neueKundenJ3, setNeueKundenJ3] = useState(120);
   const [preisJ1, setPreisJ1] = useState(50);
   const [preisAbJ2, setPreisAbJ2] = useState(80);
+  const [preisAbJ3, setPreisAbJ3] = useState(80);
   const [verlaengerungNachJ1, setVerlaengerungNachJ1] = useState(85);
   const [verlaengerungNachJ2, setVerlaengerungNachJ2] = useState(90);
   const [verlaengerungNachJ3, setVerlaengerungNachJ3] = useState(92);
@@ -134,6 +135,12 @@ function App() {
       const sponsoringProMonat = sponsoringByYear(year);
       let lizenzCashInflow = 0;
 
+      const lizenzPreisNachAlter = (age) => {
+        if (age < 12) return preisJ1;
+        if (age < 24) return preisAbJ2;
+        return preisAbJ3;
+      };
+
       for (let i = 0; i < cohorts.length; i += 1) {
         cohorts[i].age += 1;
         if (cohorts[i].age === 12) {
@@ -142,11 +149,11 @@ function App() {
         }
         if (cohorts[i].age === 24) {
           cohorts[i].size *= renew2;
-          lizenzCashInflow += cohorts[i].size * preisAbJ2 * 12;
+          lizenzCashInflow += cohorts[i].size * preisAbJ3 * 12;
         }
         if (cohorts[i].age === 36) {
           cohorts[i].size *= renew3;
-          lizenzCashInflow += cohorts[i].size * preisAbJ2 * 12;
+          lizenzCashInflow += cohorts[i].size * preisAbJ3 * 12;
         }
       }
 
@@ -156,7 +163,7 @@ function App() {
       const aktiveKunden = cohorts.reduce((sum, cohort) => sum + cohort.size, 0);
 
       const umsatzLizenzen = cohorts.reduce((sum, cohort) => {
-        const cohortPreis = cohort.age < 12 ? preisJ1 : preisAbJ2;
+        const cohortPreis = lizenzPreisNachAlter(cohort.age);
         return sum + cohort.size * cohortPreis;
       }, 0);
       const gesamteinnahmen = umsatzLizenzen + sponsoringProMonat;
@@ -206,6 +213,7 @@ function App() {
     neueKundenJ2,
     neueKundenJ3,
     preisAbJ2,
+    preisAbJ3,
     preisJ1,
     sachkostenAuto,
     sponsoringJahr1,
@@ -280,6 +288,7 @@ function App() {
               <LabeledSliderInput label="Neue Kunden/Monat Jahr 3" value={neueKundenJ3} onChange={setNeueKundenJ3} max={300} />
               <LabeledNumberInput label="Preis pro Lizenz Jahr 1 (CHF)" value={preisJ1} onChange={setPreisJ1} step={5} />
               <LabeledNumberInput label="Preis pro Lizenz ab Jahr 2 (CHF)" value={preisAbJ2} onChange={setPreisAbJ2} step={5} />
+              <LabeledNumberInput label="Preis pro Lizenz ab Jahr 3 (CHF)" value={preisAbJ3} onChange={setPreisAbJ3} step={5} />
               <div className="grid gap-3">
                 <span className="text-sm font-semibold text-black">Verlängerungsraten nach Vertragsjahr</span>
                 {[
@@ -596,8 +605,8 @@ function App() {
                 <span className="font-semibold"> 100&apos;000 CHF + 3 Monatslöhne</span>. Sachkosten sind dabei nicht enthalten.
               </p>
               <p>
-                <span className="font-semibold">Preislogik:</span> Kunden zahlen im ersten Vertragsjahr den Jahr-1-Preis und ab der
-                ersten Verlängerung den Preis ab Jahr 2.
+                <span className="font-semibold">Preislogik:</span> Kunden zahlen im ersten Vertragsjahr den Jahr-1-Preis, im zweiten
+                Vertragsjahr den Preis ab Jahr 2 und ab dem dritten Vertragsjahr den Preis ab Jahr 3.
               </p>
             </div>
             <div>
