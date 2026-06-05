@@ -121,6 +121,7 @@ const DEFAULTS = {
   lohnSenior: 10000,
   lohnJunior: 6000,
   sozialabgabenProzent: 15.0,
+  spezialtopf: 0,
   sachkostenAuto: true,
   fixkostenManuell: 8000
 };
@@ -166,6 +167,7 @@ function App() {
   const [lohnSenior, setLohnSenior] = useState(() => getStored("lohnSenior", DEFAULTS.lohnSenior));
   const [lohnJunior, setLohnJunior] = useState(() => getStored("lohnJunior", DEFAULTS.lohnJunior));
   const [sozialabgabenProzent, setSozialabgabenProzent] = useState(() => getStored("sozialabgabenProzent", DEFAULTS.sozialabgabenProzent));
+  const [spezialtopf, setSpezialtopf] = useState(() => getStored("spezialtopf", DEFAULTS.spezialtopf));
   
   const [sachkostenAuto, setSachkostenAuto] = useState(() => getStored("sachkostenAuto", DEFAULTS.sachkostenAuto));
   const [fixkostenManuell, setFixkostenManuell] = useState(() => getStored("fixkostenManuell", DEFAULTS.fixkostenManuell));
@@ -177,7 +179,7 @@ function App() {
       sponsoringJahr1, sponsoringJahr2, sponsoringJahr3, sponsoringJahr4,
       seniorFteJ1, seniorFteJ2, seniorFteJ3, seniorFteJ4,
       juniorFteJ1, juniorFteJ2, juniorFteJ3, juniorFteJ4,
-      lohnSenior, lohnJunior, sozialabgabenProzent, sachkostenAuto, fixkostenManuell
+      lohnSenior, lohnJunior, sozialabgabenProzent, spezialtopf, sachkostenAuto, fixkostenManuell
     };
     Object.entries(data).forEach(([key, val]) => {
       localStorage.setItem(`hekto_${key}`, JSON.stringify(val));
@@ -188,7 +190,7 @@ function App() {
     sponsoringJahr1, sponsoringJahr2, sponsoringJahr3, sponsoringJahr4,
     seniorFteJ1, seniorFteJ2, seniorFteJ3, seniorFteJ4,
     juniorFteJ1, juniorFteJ2, juniorFteJ3, juniorFteJ4,
-    lohnSenior, lohnJunior, sozialabgabenProzent, sachkostenAuto, fixkostenManuell
+    lohnSenior, lohnJunior, sozialabgabenProzent, spezialtopf, sachkostenAuto, fixkostenManuell
   ]);
 
   const handleReset = () => {
@@ -218,6 +220,7 @@ function App() {
     setLohnSenior(DEFAULTS.lohnSenior);
     setLohnJunior(DEFAULTS.lohnJunior);
     setSozialabgabenProzent(DEFAULTS.sozialabgabenProzent);
+    setSpezialtopf(DEFAULTS.spezialtopf);
     setSachkostenAuto(DEFAULTS.sachkostenAuto);
     setFixkostenManuell(DEFAULTS.fixkostenManuell);
   };
@@ -303,10 +306,11 @@ function App() {
       const personalkosten = bruttolohn + sozialabgaben;
       personalkostenByMonth[month] = personalkosten;
       const sachkosten = sachkostenAuto ? personalkosten * 0.25 : fixkostenManuell;
-      const gesamtausgaben = personalkosten + sachkosten;
+      const spezialtopfKosten = month <= 36 ? (spezialtopf / 36) : 0;
+      const gesamtausgaben = personalkosten + sachkosten + spezialtopfKosten;
       const netBurn = cashwirksameEinnahmen - gesamtausgaben;
       cashbestand += netBurn;
-
+ 
       points.push({
         month,
         year,
@@ -318,6 +322,7 @@ function App() {
         bruttolohn,
         sozialabgaben,
         personalkosten,
+        spezialtopfKosten,
         sponsoringProMonat,
         cashbestand,
       });
@@ -341,6 +346,7 @@ function App() {
     lohnSenior,
     lohnJunior,
     sozialabgabenProzent,
+    spezialtopf,
     seniorFteJ1,
     seniorFteJ2,
     seniorFteJ3,
@@ -702,6 +708,13 @@ function App() {
                   step={500}
                 />
               )}
+              <LabeledNumberInput
+                label="Spezialtopf / Einmaliger Puffer (CHF)"
+                value={spezialtopf}
+                onChange={setSpezialtopf}
+                step={5000}
+                helpText="Wird als flexibler Puffer gleichmässig über die ersten 3 Jahre (36 Monate) verteilt ausgegeben (ab Jahr 4 entfällt er)."
+              />
             </div>
           </article>
         </div>
@@ -1094,7 +1107,12 @@ function App() {
                         Sozialabgaben & Vorsorge ({clampPercent(sozialabgabenProzent).toFixed(1)}%): {currencyFormatter.format(breakEvenPoint.sozialabgaben)} / Monat
                       </div>
                     </div>
-                    <div>Sachkosten: {currencyFormatter.format(breakEvenPoint.gesamtausgaben - breakEvenPoint.personalkosten)} / Monat</div>
+                    <div>Sachkosten: {currencyFormatter.format(breakEvenPoint.gesamtausgaben - breakEvenPoint.personalkosten - breakEvenPoint.spezialtopfKosten)} / Monat</div>
+                    {breakEvenPoint.spezialtopfKosten > 0 && (
+                      <div className="text-[12px] text-gray-600 pl-4 border-l-2 border-black ml-1 mt-0.5 font-mono">
+                        Spezialtopf-Tranche: {currencyFormatter.format(breakEvenPoint.spezialtopfKosten)} / Monat (bis Monat 36)
+                      </div>
+                    )}
                     <div className="font-bold pt-1 mt-1 border-t border-black">Gesamtausgaben: {currencyFormatter.format(breakEvenPoint.gesamtausgaben)} / Monat</div>
                   </div>
                 </div>
