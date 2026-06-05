@@ -859,25 +859,24 @@ Die finanzielle Planung von Attaché spiegelt ein hochskalierbares, technologieg
 
 Die Investitionen von Attaché konzentrieren sich in der Aufbauphase konsequent auf den technologischen Vorsprung und den Ausbau des proprietären Moats. Mit fortschreitender Finanzierung verschiebt sich der Fokus von der Produktentwicklung hin zur internationalen Skalierung.
 
-* Pre-Seed- & Seed-Investitionen (Produkt & Core-Tech): Überführung der Prototypen („Seismo“ und „Magnitu“) in den hochverfügbaren Live-Betrieb sowie Härtung der Schweizer Server-Infrastruktur (Investitionsvolumen: CHF ${numberFormatter.format(seedBetrag)}).
-* Series A-Investitionen (Plattform & Expansion): Technologischer Ausbau zur interaktiven On-Demand-Plattform („Research-on-Demand“) sowie technisches Onboarding für ausländische Primärquellen zur Erschliessung des DACH-Raums (Investitionsvolumen: CHF ${numberFormatter.format(seriesABetrag)}).
-* IP-Schutz & Compliance: Nationale und internationale Registrierung der Marken- und Softwarerechte sowie Anpassungen an den europäischen AI Act (Investitionsvolumen: CHF ${numberFormatter.format(spezialtopf)}).
+* Pre-Seed- & Seed-Investitionen (Produkt & Core-Tech): Überführung der Prototypen („Seismo“ und „Magnitu“) in den Live-Betrieb, Launch des 1. Bezahlbriefings sowie Härtung der technischen Infrastruktur (Investitionsvolumen: CHF ${numberFormatter.format(seedBetrag)}).
+* Ausbau des publizistischen Angebots auf insgesamt drei Bezahlbreifings sowie technologischer Ausbau zur On-Demand-Plattform („Research-on-Demand“) (Investitionsvolumen: CHF ${numberFormatter.format(seriesABetrag)}).
 
 9.2 Betriebskostenplanung (Kostenstruktur / OpEx)
 
 Die betrieblichen Aufwendungen (OpEx) sind durch die Struktur des wissensbasierten Dienstleistungsmodells geprägt. Das strategische Verhältnis zwischen Personal- und Sachkosten ist langfristig auf ${dummyData.persRatio} % / ${dummyData.sachRatio} % optimiert, da die Technologie den manuellen Skalierungsaufwand massiv abfedert.
 
 * Personalaufwand: Bildet den grössten Kostenblock. Fachjournalisten und Analysten werden in einem fairen Lohnband zwischen CHF ${numberFormatter.format(lohnJunior)} und CHF ${numberFormatter.format(lohnSenior)} pro Monat vergütet. Das Team wächst gestaffelt von ${dummyData.fteSeed} FTE in der Seed-Phase auf ${dummyData.fteSeriesA} FTE nach dem Series A-Closing.
-* Technologie- & Serverkosten: Beinhaltet hocheffizientes Hosting, automatisierte Scraping-Schnittstellen (z.B. EUR-Lex) sowie die SaaS-Gebühren für das CRM- und Auslieferungssystem (Postmark, Statamic). Veranschlagt sind CHF ${numberFormatter.format(sachkostenWerte.it)} pro Monat.
-* Vertrieb & Internationaler Marktstart: Budgets für das B2B-Enterprise-Sales-Team. Nach der Series A steigen die Marketing- und Vertriebskosten auf CHF ${numberFormatter.format(sachkostenWerte.werbung * 12)} jährlich, um den horizontalen Rollout voranzutreiben.
+* Technologie- & Serverkosten: Beinhaltet hocheffizientes Hosting sowie die SaaS-Gebühren für das CRM- und Auslieferungssystem (Postmark, Statamic). Veranschlagt sind CHF ${numberFormatter.format(sachkostenWerte.it)} pro Monat.
+* Vertrieb & Internationaler Marktstart: Budgets Series A für das B2B-Enterprise-Sales-Team. Nach der Series A steigen die variablen Marketing- und Vertriebskosten auf CHF ${numberFormatter.format(sachkostenWerte.werbung * 12)} jährlich, um den horizontalen Rollout voranzutreiben.
 
 9.3 Umsatz- & Absatzplanung
 
 Die Umsatzgenerierung erfolgt primär über wiederkehrende B2B-Lizenzerlöse (ARR) mit jährlicher Vorauszahlung.
 
 * Seed-Phase (Jahr 1 bis ${dummyData.seriesAYear}): Fokus auf die Schweiz. Erreichen von ${numberFormatter.format(Math.round(dummyData.seedActiveLizenzen))} aktiven Lizenzen über ca. ${dummyData.seedAccounts} B2B-Accounts zu einem rabattierten Einstiegspreis von CHF ${numberFormatter.format(preisJ1 * 12)} pro Lizenz/Jahr (ARR-Ziel: CHF ${(dummyData.seedARR / 1000000).toFixed(2)} Mio.).
-* Series A-Phase (ab Jahr ${dummyData.seriesAStartYear}): Harmonisierung auf den regulären Zielpreis von CHF ${numberFormatter.format(preisAbJ3 * 12)} pro Lizenz/Jahr. Durch die Erschliessung neuer Themen-Nischen (vertikale Skalierung) und den Eintritt in den DACH-Raum (horizontale Skalierung) steigt das Absatzvolumen auf ${numberFormatter.format(Math.round(dummyData.seriesAActiveLizenzen))} Lizenzen (ARR-Ziel: CHF ${(dummyData.seriesAARR / 1000000).toFixed(2)} Mio.).
-* Zusatz-Umsätze: Ab dem ${dummyData.sponsoringStartYear}. Geschäftsjahr steuern exklusive, limitierte B2B-Sponsoringfenster für Verbände sowie Premium-Masterclasses planbar CHF ${numberFormatter.format(dummyData.sponsoringAmountPerYear)} pro Jahr bei.
+* Series A-Phase (ab Jahr 2): Schrittweise Harmonisierung auf den regulären Zielpreis von CHF ${numberFormatter.format(preisAbJ3 * 12)} pro Lizenz/Jahr*. Durch die Erschliessung neuer Themen-Nischen (vertikale Skalierung) und den Eintritt in den DACH-Raum (horizontale Skalierung) steigt das Absatzvolumen auf 3'103 Lizenzen (ARR-Ziel: CHF 2.69 Mio.).
+* Zusatz-Umsätze: Ab dem 1. Geschäftsjahr steuern exklusive, limitierte B2B-Sponsoringfenster planbar CHF ${numberFormatter.format(sponsoringJahr1 * 12)} pro Jahr bei. Ab dem 2. Geschäftsjahr sind es ${numberFormatter.format(sponsoringJahr2 * 12)} CHF pro jahr.
 
 9.4 Plan-Gewinn- & Verlustrechnung (GuV)
 
@@ -1928,13 +1927,10 @@ Zur Absicherung wurden drei Szenarien modelliert:
             </p>
             <ul className="list-disc pl-5 mb-6 text-sm text-black space-y-2">
               <li>
-                <strong>Pre-Seed- & Seed-Investitionen (Produkt & Core-Tech):</strong> Überführung der Prototypen („Seismo“ und „Magnitu“) in den hochverfügbaren Live-Betrieb sowie Härtung der Schweizer Server-Infrastruktur (Investitionsvolumen: CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(seedBetrag)}</span>).
+                <strong>Pre-Seed- & Seed-Investitionen (Produkt & Core-Tech):</strong> Überführung der Prototypen („Seismo“ und „Magnitu“) in den Live-Betrieb, Launch des 1. Bezahlbriefings sowie Härtung der technischen Infrastruktur (Investitionsvolumen: CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(seedBetrag)}</span>).
               </li>
               <li>
-                <strong>Series A-Investitionen (Plattform & Expansion):</strong> Technologischer Ausbau zur interaktiven On-Demand-Plattform („Research-on-Demand“) sowie technisches Onboarding für ausländische Primärquellen zur Erschliessung des DACH-Raums (Investitionsvolumen: CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(seriesABetrag)}</span>).
-              </li>
-              <li>
-                <strong>IP-Schutz & Compliance:</strong> Nationale und internationale Registrierung der Marken- und Softwarerechte sowie Anpassungen an den europäischen AI Act (Investitionsvolumen: CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(spezialtopf)}</span>).
+                Ausbau des publizistischen Angebots auf insgesamt drei Bezahlbreifings sowie technologischer Ausbau zur On-Demand-Plattform („Research-on-Demand“) (Investitionsvolumen: CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(seriesABetrag)}</span>).
               </li>
             </ul>
 
@@ -1949,10 +1945,10 @@ Zur Absicherung wurden drei Szenarien modelliert:
                 <strong>Personalaufwand:</strong> Bildet den grössten Kostenblock. Fachjournalisten und Analysten werden in einem fairen Lohnband zwischen CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(lohnJunior)}</span> und CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(lohnSenior)}</span> pro Monat vergütet. Das Team wächst gestaffelt von <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.fteSeed}</span> FTE in der Seed-Phase auf <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.fteSeriesA}</span> FTE nach dem Series A-Closing.
               </li>
               <li>
-                <strong>Technologie- & Serverkosten:</strong> Beinhaltet hocheffizientes Hosting, automatisierte Scraping-Schnittstellen (z.B. EUR-Lex) sowie die SaaS-Gebühren für das CRM- und Auslieferungssystem (Postmark, Statamic). Veranschlagt sind CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(sachkostenWerte.it)}</span> pro Monat.
+                <strong>Technologie- & Serverkosten:</strong> Beinhaltet hocheffizientes Hosting sowie die SaaS-Gebühren für das CRM- und Auslieferungssystem (Postmark, Statamic). Veranschlagt sind CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(sachkostenWerte.it)}</span> pro Monat.
               </li>
               <li>
-                <strong>Vertrieb & Internationaler Marktstart:</strong> Budgets für das B2B-Enterprise-Sales-Team. Nach der Series A steigen die Marketing- und Vertriebskosten auf CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(sachkostenWerte.werbung * 12)}</span> jährlich, um den horizontalen Rollout voranzutreiben.
+                <strong>Vertrieb & Internationaler Marktstart:</strong> Budgets Series A für das B2B-Enterprise-Sales-Team. Nach der Series A steigen die variablen Marketing- und Vertriebskosten auf CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(sachkostenWerte.werbung * 12)}</span> jährlich, um den horizontalen Rollout voranzutreiben.
               </li>
             </ul>
 
@@ -1967,10 +1963,10 @@ Zur Absicherung wurden drei Szenarien modelliert:
                 <strong>Seed-Phase (Jahr <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">1</span> bis <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.seriesAYear}</span>):</strong> Fokus auf die Schweiz. Erreichen von <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(Math.round(dummyData.seedActiveLizenzen))}</span> aktiven Lizenzen über ca. <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.seedAccounts}</span> B2B-Accounts zu einem rabattierten Einstiegspreis von CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(preisJ1 * 12)}</span> pro Lizenz/Jahr (ARR-Ziel: CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{(dummyData.seedARR / 1000000).toFixed(2)}</span> Mio.).
               </li>
               <li>
-                <strong>Series A-Phase (ab Jahr <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.seriesAStartYear}</span>):</strong> Harmonisierung auf den regulären Zielpreis von CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(preisAbJ3 * 12)}</span> pro Lizenz/Jahr. Durch die Erschliessung neuer Themen-Nischen (vertikale Skalierung) und den Eintritt in den DACH-Raum (horizontale Skalierung) steigt das Absatzvolumen auf <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(Math.round(dummyData.seriesAActiveLizenzen))}</span> Lizenzen (ARR-Ziel: CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{(dummyData.seriesAARR / 1000000).toFixed(2)}</span> Mio.).
+                <strong>Series A-Phase (ab Jahr 2):</strong> Schrittweise Harmonisierung auf den regulären Zielpreis von CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(preisAbJ3 * 12)}</span> pro Lizenz/Jahr*. Durch die Erschliessung neuer Themen-Nischen (vertikale Skalierung) und den Eintritt in den DACH-Raum (horizontale Skalierung) steigt das Absatzvolumen auf 3'103 Lizenzen (ARR-Ziel: CHF 2.69 Mio.).
               </li>
               <li>
-                <strong>Zusatz-Umsätze:</strong> Ab dem <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.sponsoringStartYear}</span>. Geschäftsjahr steuern exklusive, limitierte B2B-Sponsoringfenster für Verbände sowie Premium-Masterclasses planbar CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(dummyData.sponsoringAmountPerYear)}</span> pro Jahr bei.
+                <strong>Zusatz-Umsätze:</strong> Ab dem 1. Geschäftsjahr steuern exklusive, limitierte B2B-Sponsoringfenster planbar CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(sponsoringJahr1 * 12)}</span> pro Jahr bei. Ab dem 2. Geschäftsjahr sind es <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(sponsoringJahr2 * 12)}</span> CHF pro Jahr.
               </li>
             </ul>
 
