@@ -129,6 +129,8 @@ const DEFAULTS = {
   seedMonat: 0,
   seriesABetrag: 0,
   seriesAMonat: 12,
+  preSeedAfondPerdu: 100000,
+  preSeedBridge: 50000,
   neueKundenJ1: 40,
   neueKundenJ2: 80,
   neueKundenJ3: 120,
@@ -143,14 +145,14 @@ const DEFAULTS = {
   sponsoringJahr2: 10000,
   sponsoringJahr3: 10000,
   sponsoringJahr4: 10000,
-  seniorFteJ1: 3,
-  seniorFteJ2: 4,
-  seniorFteJ3: 5,
-  seniorFteJ4: 5,
-  juniorFteJ1: 6,
-  juniorFteJ2: 8,
-  juniorFteJ3: 12,
-  juniorFteJ4: 12,
+  seniorFteJ1: 6,
+  seniorFteJ2: 8,
+  seniorFteJ3: 11,
+  seniorFteJ4: 11,
+  juniorFteJ1: 4,
+  juniorFteJ2: 5,
+  juniorFteJ3: 6,
+  juniorFteJ4: 6,
   lohnSenior: 10000,
   lohnJunior: 6000,
   sozialabgabenProzent: 15.0,
@@ -175,6 +177,8 @@ function App() {
   const [seedMonat, setSeedMonat] = useState(() => getStored("seedMonat", DEFAULTS.seedMonat));
   const [seriesABetrag, setSeriesABetrag] = useState(() => getStored("seriesABetrag", DEFAULTS.seriesABetrag));
   const [seriesAMonat, setSeriesAMonat] = useState(() => getStored("seriesAMonat", DEFAULTS.seriesAMonat));
+  const [preSeedAfondPerdu, setPreSeedAfondPerdu] = useState(() => getStored("preSeedAfondPerdu", DEFAULTS.preSeedAfondPerdu));
+  const [preSeedBridge, setPreSeedBridge] = useState(() => getStored("preSeedBridge", DEFAULTS.preSeedBridge));
   
   const startkapital = (seedMonat === 0 ? seedBetrag : 0) + (seriesAMonat === 0 ? seriesABetrag : 0);
 
@@ -213,7 +217,7 @@ function App() {
 
   useEffect(() => {
     const data = {
-      seedBetrag, seedMonat, seriesABetrag, seriesAMonat, neueKundenJ1, neueKundenJ2, neueKundenJ3, neueKundenJ4,
+      seedBetrag, seedMonat, seriesABetrag, seriesAMonat, preSeedAfondPerdu, preSeedBridge, neueKundenJ1, neueKundenJ2, neueKundenJ3, neueKundenJ4,
       preisJ1, preisAbJ2, preisAbJ3, verlaengerungNachJ1, verlaengerungNachJ2, verlaengerungNachJ3,
       sponsoringJahr1, sponsoringJahr2, sponsoringJahr3, sponsoringJahr4,
       seniorFteJ1, seniorFteJ2, seniorFteJ3, seniorFteJ4,
@@ -224,7 +228,7 @@ function App() {
       localStorage.setItem(`hekto_${key}`, JSON.stringify(val));
     });
   }, [
-    seedBetrag, seedMonat, seriesABetrag, seriesAMonat, neueKundenJ1, neueKundenJ2, neueKundenJ3, neueKundenJ4,
+    seedBetrag, seedMonat, seriesABetrag, seriesAMonat, preSeedAfondPerdu, preSeedBridge, neueKundenJ1, neueKundenJ2, neueKundenJ3, neueKundenJ4,
     preisJ1, preisAbJ2, preisAbJ3, verlaengerungNachJ1, verlaengerungNachJ2, verlaengerungNachJ3,
     sponsoringJahr1, sponsoringJahr2, sponsoringJahr3, sponsoringJahr4,
     seniorFteJ1, seniorFteJ2, seniorFteJ3, seniorFteJ4,
@@ -237,6 +241,8 @@ function App() {
     setSeedMonat(DEFAULTS.seedMonat);
     setSeriesABetrag(DEFAULTS.seriesABetrag);
     setSeriesAMonat(DEFAULTS.seriesAMonat);
+    setPreSeedAfondPerdu(DEFAULTS.preSeedAfondPerdu);
+    setPreSeedBridge(DEFAULTS.preSeedBridge);
     setNeueKundenJ1(DEFAULTS.neueKundenJ1);
     setNeueKundenJ2(DEFAULTS.neueKundenJ2);
     setNeueKundenJ3(DEFAULTS.neueKundenJ3);
@@ -869,6 +875,29 @@ function App() {
               <div className="border-2 border-black bg-[#F5F5F5] p-3 space-y-3">
                 <span className="text-xs font-bold text-black uppercase block">Finanzierungsrunden / Funding</span>
                 
+                <div className="grid grid-cols-2 gap-3 border border-black p-2 bg-white">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-semibold text-black">Pre-Seed à-fond-perdu (CHF)</span>
+                    <input
+                      type="number"
+                      className="w-full border-2 border-black bg-white px-2 py-1 text-sm font-semibold text-black transition-shadow hover:shadow-[1px_1px_0px_#000] focus:outline-none"
+                      value={preSeedAfondPerdu}
+                      step={10000}
+                      onChange={(event) => setPreSeedAfondPerdu(clampNumber(Number(event.target.value)))}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-semibold text-black">Pre-Seed Bridge (CHF)</span>
+                    <input
+                      type="number"
+                      className="w-full border-2 border-black bg-white px-2 py-1 text-sm font-semibold text-black transition-shadow hover:shadow-[1px_1px_0px_#000] focus:outline-none"
+                      value={preSeedBridge}
+                      step={10000}
+                      onChange={(event) => setPreSeedBridge(clampNumber(Number(event.target.value)))}
+                    />
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-3 border border-black p-2 bg-white">
                   <div className="flex flex-col gap-1">
                     <span className="text-xs font-semibold text-black">Seed Runde (CHF)</span>
@@ -1867,7 +1896,7 @@ function App() {
             </p>
             <ol className="list-decimal pl-5 mb-6 text-sm text-black space-y-2">
               <li>
-                <strong>Pre-Seed-Runde (Abgeschlossen):</strong> CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">150'000</span> als <em>à-fond-perdu</em>-Anschubfinanzierung für die Marktforschung durch Medienunternehmer sowie ein Wandeldarlehen (Bridge) von CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">250'000</span> für das MVP-Prototyping.
+                <strong>Pre-Seed-Runde (Abgeschlossen):</strong> CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(preSeedAfondPerdu)}</span> als <em>à-fond-perdu</em>-Anschubfinanzierung für die Marktforschung durch Medienunternehmer sowie ein Wandeldarlehen (Bridge) von CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(preSeedBridge)}</span> für das MVP-Prototyping.
               </li>
               <li>
                 <strong>Seed-Finanzierungsrunde (Aktuelle Phase):</strong> Einwerbung von mindestens CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{(seedBetrag / 1000000).toFixed(1)}</span> Mio. bis CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{(seedBetrag / 1000000 * 1.5).toFixed(1)}</span> Mio. zur Absicherung des Runways bis zum Schweizer Break-even. Abgabe von <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">20</span> % der Anteile am Gründungs-Cap-Table.
