@@ -537,6 +537,67 @@ function App() {
     verlaengerungNachJ2,
   ]);
 
+  const kennzahlen = useMemo(() => {
+    const years = [1, 2, 3];
+    const results = years.map((y) => {
+      const startM = (y - 1) * 12 + 1;
+      const endM = y * 12;
+      const yearPoints = simulation.filter((p) => p.month >= startM && p.month <= endM);
+
+      const lastMonthPoint = simulation[endM - 1] || yearPoints[yearPoints.length - 1];
+      const arr = lastMonthPoint ? lastMonthPoint.umsatzLizenzen * 12 : 0;
+
+      const betriebskosten = yearPoints.reduce((sum, p) => sum + p.gesamtausgaben, 0);
+
+      const ebitan = yearPoints.reduce((sum, p) => sum + (p.gesamteinnahmen - p.gesamtausgaben), 0);
+
+      const gesamteinnahmen = yearPoints.reduce((sum, p) => sum + p.gesamteinnahmen, 0);
+      const bruttomarge = gesamteinnahmen > 0 ? (ebitan / gesamteinnahmen) * 100 : 0;
+
+      const totalBurn = yearPoints.reduce((sum, p) => sum + Math.max(0, p.gesamtausgaben - p.cashwirksameEinnahmen), 0);
+      const avgBurnRate = totalBurn / 12;
+
+      let runwayVal = "Profitabel";
+      const remainingSimulation = simulation.slice(endM);
+      const firstNeg = remainingSimulation.find((p) => p.cashbestand < 0);
+      if (firstNeg) {
+        runwayVal = `${firstNeg.month - endM} Mt.`;
+      } else {
+        const lastPoint = simulation[simulation.length - 1];
+        if (lastPoint && lastPoint.cashbestand < 0) {
+          runwayVal = "Insolvent";
+        } else {
+          const lastM = yearPoints[yearPoints.length - 1];
+          if (lastM && lastM.gesamtausgaben > lastM.cashwirksameEinnahmen) {
+            const currentCash = lastMonthPoint ? lastMonthPoint.cashbestand : 0;
+            const currentBurn = lastM.gesamtausgaben - lastM.cashwirksameEinnahmen;
+            if (currentBurn > 0) {
+              const estRunway = Math.round(currentCash / currentBurn);
+              runwayVal = estRunway > 48 ? "48+" : `${estRunway} Mt.`;
+            }
+          }
+        }
+      }
+
+      const kapitalbedarf = Math.max(0, -ebitan);
+
+      return {
+        year: y,
+        arr,
+        betriebskosten,
+        ebitan,
+        bruttomarge,
+        avgBurnRate,
+        runway: runwayVal,
+        kapitalbedarf,
+      };
+    });
+
+    const totalKapitalbedarf = results.reduce((sum, r) => sum + r.kapitalbedarf, 0);
+
+    return { results, totalKapitalbedarf };
+  }, [simulation]);
+
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-[1400px] flex-col gap-4 p-4 2xl:px-8">
       {/* Header */}
@@ -626,6 +687,15 @@ function App() {
           onClick={() => setActiveTab("calc")}
         >
           Berechnung
+        </button>
+        <button
+          type="button"
+          className={`flex-1 py-3 text-sm font-bold border-r-2 border-black transition-colors ${
+            activeTab === "kennzahlen" ? "bg-[#FF6B6B] text-black" : "bg-white text-black hover:bg-[#F5F5F5]"
+          }`}
+          onClick={() => setActiveTab("kennzahlen")}
+        >
+          Kennzahlen
         </button>
         <button
           type="button"
@@ -1305,6 +1375,160 @@ function App() {
                 Kein Break-Even innerhalb der 48 Monate mit den aktuellen Parametern.
               </div>
             )}
+          </article>
+        </div>
+      )}
+
+      {activeTab === "kennzahlen" && (
+        <div className="space-y-4">
+          {/* Kapitalbedarf Header Card */}
+          <article className="border-2 border-black bg-white p-6 transition-shadow hover:shadow-[2px_2px_0px_#000]">
+            <h2 className="text-[20px] font-bold text-black border-b-2 border-black pb-2 mb-4">Finanzkennzahlen</h2>
+            <div className="text-lg font-bold text-[#FF6B6B] bg-red-50 border-2 border-black p-4 inline-block">
+              Wir rechnen mit einem Kapitalbedarf von rund {currencyFormatter.format(kennzahlen.totalKapitalbedarf)} (GJ 1 - GJ 3)
+            </div>
+          </article>
+
+          {/* Table Card */}
+          <article className="border-2 border-black bg-white p-6 transition-shadow hover:shadow-[2px_2px_0px_#000]">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left font-sans border-collapse">
+                <thead>
+                  <tr className="border-b-2 border-black bg-[#F5F5F5] text-black text-sm">
+                    <th className="p-3 border-r-2 border-black font-bold">Kennzahl</th>
+                    <th className="p-3 border-r-2 border-black font-bold text-center w-1/4">GJ 1</th>
+                    <th className="p-3 border-r-2 border-black font-bold text-center w-1/4">GJ 2</th>
+                    <th className="p-3 font-bold text-center w-1/4">GJ 3</th>
+                  </tr>
+                </thead>
+                <tbody className="font-mono text-sm">
+                  {/* ARR Row */}
+                  <tr className="border-b-2 border-black hover:bg-[#FAF9F6]">
+                    <td className="p-3 border-r-2 border-black font-sans font-semibold">ARR</td>
+                    {kennzahlen.results.map((r) => (
+                      <td key={r.year} className="p-3 border-r-2 last:border-r-0 border-black text-center font-bold text-blue-600">
+                        {currencyFormatter.format(r.arr)}
+                      </td>
+                    ))}
+                  </tr>
+                  {/* Betriebskosten Row */}
+                  <tr className="border-b-2 border-black hover:bg-[#FAF9F6]">
+                    <td className="p-3 border-r-2 border-black font-sans font-semibold">Betriebskosten</td>
+                    {kennzahlen.results.map((r) => (
+                      <td key={r.year} className="p-3 border-r-2 last:border-r-0 border-black text-center text-red-600">
+                        {currencyFormatter.format(r.betriebskosten)}
+                      </td>
+                    ))}
+                  </tr>
+                  {/* EBITA Row */}
+                  <tr className="border-b-2 border-black hover:bg-[#FAF9F6]">
+                    <td className="p-3 border-r-2 border-black font-sans font-semibold">EBITA</td>
+                    {kennzahlen.results.map((r) => (
+                      <td key={r.year} className={`p-3 border-r-2 last:border-r-0 border-black text-center font-bold ${r.ebitan >= 0 ? "text-green-600" : "text-red-600"}`}>
+                        {currencyFormatter.format(r.ebitan)}
+                      </td>
+                    ))}
+                  </tr>
+                  {/* Bruttomarge Row */}
+                  <tr className="border-b-2 border-black hover:bg-[#FAF9F6]">
+                    <td className="p-3 border-r-2 border-black font-sans font-semibold">Bruttomarge (inkl. PersKo)</td>
+                    {kennzahlen.results.map((r) => (
+                      <td key={r.year} className={`p-3 border-r-2 last:border-r-0 border-black text-center font-bold ${r.bruttomarge >= 0 ? "text-green-600" : "text-red-600"}`}>
+                        {r.bruttomarge.toFixed(2)}%
+                      </td>
+                    ))}
+                  </tr>
+                  {/* Net Burn Rate Row */}
+                  <tr className="border-b-2 border-black hover:bg-[#FAF9F6]">
+                    <td className="p-3 border-r-2 border-black font-sans font-semibold">Net Burn Rate pro Mt.</td>
+                    {kennzahlen.results.map((r) => (
+                      <td key={r.year} className="p-3 border-r-2 last:border-r-0 border-black text-center font-semibold">
+                        {r.avgBurnRate <= 0 ? (
+                          <span className="text-green-600 bg-green-50 px-1 border border-green-600 uppercase text-xs">Profitabel</span>
+                        ) : (
+                          `${currencyFormatter.format(r.avgBurnRate)} / Monat`
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                  {/* Cash Runway Row */}
+                  <tr className="border-b-2 border-black hover:bg-[#FAF9F6]">
+                    <td className="p-3 border-r-2 border-black font-sans font-semibold">Cash Runway</td>
+                    {kennzahlen.results.map((r) => (
+                      <td key={r.year} className="p-3 border-r-2 last:border-r-0 border-black text-center font-bold">
+                        {r.runway === "Profitabel" ? (
+                          <span className="text-green-600 bg-green-50 px-1 border border-green-600 uppercase text-xs">Profitabel</span>
+                        ) : (
+                          r.runway
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                  {/* Kapitalbedarf Row */}
+                  <tr className="hover:bg-[#FAF9F6]">
+                    <td className="p-3 border-r-2 border-black font-sans font-semibold">Kapitalbedarf</td>
+                    {kennzahlen.results.map((r) => (
+                      <td key={r.year} className={`p-3 border-r-2 last:border-r-0 border-black text-center font-bold ${r.kapitalbedarf > 0 ? "text-red-600" : "text-green-600"}`}>
+                        {currencyFormatter.format(r.kapitalbedarf)}
+                      </td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+
+          {/* Explanation Section */}
+          <article className="border-2 border-black bg-[#F5F5F5] p-6 transition-shadow hover:shadow-[2px_2px_0px_#000]">
+            <h3 className="text-[16px] font-bold text-black border-b-2 border-black pb-1 mb-3">Erklärung der Kennzahlen</h3>
+            <div className="grid gap-4 md:grid-cols-2 text-sm text-black">
+              <div className="space-y-3">
+                <div>
+                  <span className="font-bold block">ARR (Annual Recurring Revenue)</span>
+                  <span className="text-xs text-gray-700 leading-tight font-mono">
+                    Lizenzumsatz des letzten Monats des jeweiligen Jahres mal 12.
+                  </span>
+                </div>
+                <div>
+                  <span className="font-bold block">Betriebskosten</span>
+                  <span className="text-xs text-gray-700 leading-tight font-mono">
+                    Summe aller Betriebsausgaben (Personalkosten inkl. Sozialabgaben, Sachkosten und Spezialtopf-Tranchen) des jeweiligen Jahres.
+                  </span>
+                </div>
+                <div>
+                  <span className="font-bold block">EBITA</span>
+                  <span className="text-xs text-gray-700 leading-tight font-mono">
+                    Operatives Gesamtergebnis vor Zinsen, Steuern und Abschreibungen (Einnahmen minus Betriebskosten).
+                  </span>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <span className="font-bold block">Bruttomarge (inkl. PersKo)</span>
+                  <span className="text-xs text-gray-700 leading-tight font-mono">
+                    Das prozentuale Verhältnis von EBITA zu den Gesamteinnahmen: (EBITA / Gesamteinnahmen) * 100% für das jeweilige Jahr.
+                  </span>
+                </div>
+                <div>
+                  <span className="font-bold block">Net Burn Rate pro Mt.</span>
+                  <span className="text-xs text-gray-700 leading-tight font-mono">
+                    Durchschnittlicher monatlicher operativer Cash-Abfluss (Ausgaben minus cashwirksame Einnahmen). Ist der Cashflow positiv, gilt es als "Profitabel".
+                  </span>
+                </div>
+                <div>
+                  <span className="font-bold block">Cash Runway</span>
+                  <span className="text-xs text-gray-700 leading-tight font-mono">
+                    Anzahl Monate ab Ende des jeweiligen Jahres, bis der Cashbestand unter 0 fällt (basierend auf dem weiteren Verlauf der Simulation). Bei dauerhaft positivem Cashbestand wird "Profitabel" angezeigt.
+                  </span>
+                </div>
+                <div>
+                  <span className="font-bold block">Kapitalbedarf</span>
+                  <span className="text-xs text-gray-700 leading-tight font-mono">
+                    Der operative Fehlbetrag (negatives EBITA) des jeweiligen Jahres, der durch Kapitalzufuhr gedeckt werden muss.
+                  </span>
+                </div>
+              </div>
+            </div>
           </article>
         </div>
       )}
