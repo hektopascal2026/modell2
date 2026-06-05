@@ -652,13 +652,13 @@ function App() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <LabeledNumberInput
-                  label="Lohn Senior FTE / Monat (CHF)"
+                  label="Bruttolohn Senior FTE / Monat (CHF)"
                   value={lohnSenior}
                   onChange={setLohnSenior}
                   step={500}
                 />
                 <LabeledNumberInput
-                  label="Lohn Junior FTE / Monat (CHF)"
+                  label="Bruttolohn Junior FTE / Monat (CHF)"
                   value={lohnJunior}
                   onChange={setLohnJunior}
                   step={500}
