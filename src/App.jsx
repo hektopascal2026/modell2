@@ -766,6 +766,172 @@ function App() {
     };
   }, [simulation, guvData, seedMonat, seriesAMonat, seniorFteJ1, juniorFteJ1, seniorFteJ3, juniorFteJ3, sponsoringJahr1, sponsoringJahr2, sponsoringJahr3, sponsoringJahr4, breakEvenMonat]);
 
+  const handleSaveTemplate = () => {
+    const name = window.prompt("Geben Sie einen Namen für das Template ein:", "Szenario 1");
+    if (!name) return;
+
+    const templates = JSON.parse(localStorage.getItem("hekto_templates") || "{}");
+    const data = {
+      seedBetrag, seedMonat, seriesABetrag, seriesAMonat, preSeedAfondPerdu, preSeedBridge, neueKundenJ1, neueKundenJ2, neueKundenJ3, neueKundenJ4,
+      preisJ1, preisAbJ2, preisAbJ3, verlaengerungNachJ1, verlaengerungNachJ2, verlaengerungNachJ3,
+      sponsoringJahr1, sponsoringJahr2, sponsoringJahr3, sponsoringJahr4,
+      seniorFteJ1, seniorFteJ2, seniorFteJ3, seniorFteJ4,
+      juniorFteJ1, juniorFteJ2, juniorFteJ3, juniorFteJ4,
+      lohnSenior, lohnJunior, sozialabgabenProzent, spezialtopf, sachkostenAuto, sachkostenWerte
+    };
+    templates[name] = data;
+    localStorage.setItem("hekto_templates", JSON.stringify(templates));
+    alert(`Template "${name}" erfolgreich gespeichert!`);
+  };
+
+  const handleLoadTemplate = () => {
+    const templates = JSON.parse(localStorage.getItem("hekto_templates") || "{}");
+    const names = Object.keys(templates);
+    if (names.length === 0) {
+      alert("Keine gespeicherten Templates gefunden!");
+      return;
+    }
+
+    const name = window.prompt(
+      `Verfügbare Templates:\n- ${names.join("\n- ")}\n\nBitte geben Sie den genauen Namen des zu ladenden Templates ein:`,
+      names[0]
+    );
+    if (!name) return;
+
+    const data = templates[name];
+    if (!data) {
+      alert("Template nicht gefunden!");
+      return;
+    }
+
+    if (data.seedBetrag !== undefined) setSeedBetrag(data.seedBetrag);
+    if (data.seedMonat !== undefined) setSeedMonat(data.seedMonat);
+    if (data.seriesABetrag !== undefined) setSeriesABetrag(data.seriesABetrag);
+    if (data.seriesAMonat !== undefined) setSeriesAMonat(data.seriesAMonat);
+    if (data.preSeedAfondPerdu !== undefined) setPreSeedAfondPerdu(data.preSeedAfondPerdu);
+    if (data.preSeedBridge !== undefined) setPreSeedBridge(data.preSeedBridge);
+    
+    if (data.neueKundenJ1 !== undefined) setNeueKundenJ1(data.neueKundenJ1);
+    if (data.neueKundenJ2 !== undefined) setNeueKundenJ2(data.neueKundenJ2);
+    if (data.neueKundenJ3 !== undefined) setNeueKundenJ3(data.neueKundenJ3);
+    if (data.neueKundenJ4 !== undefined) setNeueKundenJ4(data.neueKundenJ4);
+    
+    if (data.preisJ1 !== undefined) setPreisJ1(data.preisJ1);
+    if (data.preisAbJ2 !== undefined) setPreisAbJ2(data.preisAbJ2);
+    if (data.preisAbJ3 !== undefined) setPreisAbJ3(data.preisAbJ3);
+    
+    if (data.verlaengerungNachJ1 !== undefined) setVerlaengerungNachJ1(data.verlaengerungNachJ1);
+    if (data.verlaengerungNachJ2 !== undefined) setVerlaengerungNachJ2(data.verlaengerungNachJ2);
+    if (data.verlaengerungNachJ3 !== undefined) setVerlaengerungNachJ3(data.verlaengerungNachJ3);
+    
+    if (data.sponsoringJahr1 !== undefined) setSponsoringJahr1(data.sponsoringJahr1);
+    if (data.sponsoringJahr2 !== undefined) setSponsoringJahr2(data.sponsoringJahr2);
+    if (data.sponsoringJahr3 !== undefined) setSponsoringJahr3(data.sponsoringJahr3);
+    if (data.sponsoringJahr4 !== undefined) setSponsoringJahr4(data.sponsoringJahr4);
+    
+    if (data.seniorFteJ1 !== undefined) setSeniorFteJ1(data.seniorFteJ1);
+    if (data.seniorFteJ2 !== undefined) setSeniorFteJ2(data.seniorFteJ2);
+    if (data.seniorFteJ3 !== undefined) setSeniorFteJ3(data.seniorFteJ3);
+    if (data.seniorFteJ4 !== undefined) setSeniorFteJ4(data.seniorFteJ4);
+    
+    if (data.juniorFteJ1 !== undefined) setJuniorFteJ1(data.juniorFteJ1);
+    if (data.juniorFteJ2 !== undefined) setJuniorFteJ2(data.juniorFteJ2);
+    if (data.juniorFteJ3 !== undefined) setJuniorFteJ3(data.juniorFteJ3);
+    if (data.juniorFteJ4 !== undefined) setJuniorFteJ4(data.juniorFteJ4);
+    
+    if (data.lohnSenior !== undefined) setLohnSenior(data.lohnSenior);
+    if (data.lohnJunior !== undefined) setLohnJunior(data.lohnJunior);
+    if (data.sozialabgabenProzent !== undefined) setSozialabgabenProzent(data.sozialabgabenProzent);
+    if (data.spezialtopf !== undefined) setSpezialtopf(data.spezialtopf);
+    
+    if (data.sachkostenAuto !== undefined) setSachkostenAuto(data.sachkostenAuto);
+    if (data.sachkostenWerte !== undefined) setSachkostenWerte(data.sachkostenWerte);
+
+    alert(`Template "${name}" erfolgreich geladen!`);
+  };
+
+  const handleCopyText = () => {
+    const text = `9. Finanzplan (Zahlenteil)
+
+Die finanzielle Planung von Attaché spiegelt ein hochskalierbares, technologiegestütztes B2B-Geschäftsmodell wider. Um das volle Marktpotenzial der Executive Intelligence in der Schweiz auszuschöpfen und die Plattform anschliessend international zu skalisieren, ist die Finanzierungsstruktur in drei Phasen unterteilt: Pre-Seed (Validierung), Seed (Markteintritt & Break-even) und Series A (Plattform-Ausbau & Internationalisierung).
+
+9.1 Investitionsplan
+
+Die Investitionen von Attaché konzentrieren sich in der Aufbauphase konsequent auf den technologischen Vorsprung und den Ausbau des proprietären Moats. Mit fortschreitender Finanzierung verschiebt sich der Fokus von der Produktentwicklung hin zur internationalen Skalierung.
+
+* Pre-Seed- & Seed-Investitionen (Produkt & Core-Tech): Überführung der Prototypen („Seismo“ und „Magnitu“) in den hochverfügbaren Live-Betrieb sowie Härtung der Schweizer Server-Infrastruktur (Investitionsvolumen: CHF ${numberFormatter.format(seedBetrag)}).
+* Series A-Investitionen (Plattform & Expansion): Technologischer Ausbau zur interaktiven On-Demand-Plattform („Research-on-Demand“) sowie technisches Onboarding für ausländische Primärquellen zur Erschliessung des DACH-Raums (Investitionsvolumen: CHF ${numberFormatter.format(seriesABetrag)}).
+* IP-Schutz & Compliance: Nationale und internationale Registrierung der Marken- und Softwarerechte sowie Anpassungen an den europäischen AI Act (Investitionsvolumen: CHF ${numberFormatter.format(spezialtopf)}).
+
+9.2 Betriebskostenplanung (Kostenstruktur / OpEx)
+
+Die betrieblichen Aufwendungen (OpEx) sind durch die Struktur des wissensbasierten Dienstleistungsmodells geprägt. Das strategische Verhältnis zwischen Personal- und Sachkosten ist langfristig auf ${dummyData.persRatio} % / ${dummyData.sachRatio} % optimiert, da die Technologie den manuellen Skalierungsaufwand massiv abfedert.
+
+* Personalaufwand: Bildet den grössten Kostenblock. Fachjournalisten und Analysten werden in einem fairen Lohnband zwischen CHF ${numberFormatter.format(lohnJunior)} und CHF ${numberFormatter.format(lohnSenior)} pro Monat vergütet. Das Team wächst gestaffelt von ${dummyData.fteSeed} FTE in der Seed-Phase auf ${dummyData.fteSeriesA} FTE nach dem Series A-Closing.
+* Technologie- & Serverkosten: Beinhaltet hocheffizientes Hosting, automatisierte Scraping-Schnittstellen (z.B. EUR-Lex) sowie die SaaS-Gebühren für das CRM- und Auslieferungssystem (Postmark, Statamic). Veranschlagt sind CHF ${numberFormatter.format(sachkostenWerte.it)} pro Monat.
+* Vertrieb & Internationaler Marktstart: Budgets für das B2B-Enterprise-Sales-Team. Nach der Series A steigen die Marketing- und Vertriebskosten auf CHF ${numberFormatter.format(sachkostenWerte.werbung * 12)} jährlich, um den horizontalen Rollout voranzutreiben.
+
+9.3 Umsatz- & Absatzplanung
+
+Die Umsatzgenerierung erfolgt primär über wiederkehrende B2B-Lizenzerlöse (ARR) mit jährlicher Vorauszahlung.
+
+* Seed-Phase (Jahr 1 bis ${dummyData.seriesAYear}): Fokus auf die Schweiz. Erreichen von ${numberFormatter.format(Math.round(dummyData.seedActiveLizenzen))} aktiven Lizenzen über ca. ${dummyData.seedAccounts} B2B-Accounts zu einem rabattierten Einstiegspreis von CHF ${numberFormatter.format(preisJ1 * 12)} pro Lizenz/Jahr (ARR-Ziel: CHF ${(dummyData.seedARR / 1000000).toFixed(2)} Mio.).
+* Series A-Phase (ab Jahr ${dummyData.seriesAStartYear}): Harmonisierung auf den regulären Zielpreis von CHF ${numberFormatter.format(preisAbJ3 * 12)} pro Lizenz/Jahr. Durch die Erschliessung neuer Themen-Nischen (vertikale Skalierung) und den Eintritt in den DACH-Raum (horizontale Skalierung) steigt das Absatzvolumen auf ${numberFormatter.format(Math.round(dummyData.seriesAActiveLizenzen))} Lizenzen (ARR-Ziel: CHF ${(dummyData.seriesAARR / 1000000).toFixed(2)} Mio.).
+* Zusatz-Umsätze: Ab dem ${dummyData.sponsoringStartYear}. Geschäftsjahr steuern exklusive, limitierte B2B-Sponsoringfenster für Verbände sowie Premium-Masterclasses planbar CHF ${numberFormatter.format(dummyData.sponsoringAmountPerYear)} pro Jahr bei.
+
+9.4 Plan-Gewinn- & Verlustrechnung (GuV)
+
+Die folgende Tabelle zeigt die konsolidierte Erfolgsrechnung inklusive der Expansionsphase nach der Series A:
+
+Position (in CHF) | Geschäftsjahr 1 (Seed) | Geschäftsjahr 2${dummyData.breakEvenYear === 2 ? " (Break-even)" : ""} | Geschäftsjahr 3${dummyData.breakEvenYear === 3 ? " (Break-even)" : ""}${dummyData.seriesAYear === 3 ? " (Series A)" : ""}
+------------------|------------------------|--------------------------------|-------------------------
+Umsatzerlöse (ARR Lizenzen) | ${numberFormatter.format(Math.round(guvData[1].umsatzLizenzen))} | ${numberFormatter.format(Math.round(guvData[2].umsatzLizenzen))} | ${numberFormatter.format(Math.round(guvData[3].umsatzLizenzen))}
+Erlöse B2B-Sponsoring / Events | ${numberFormatter.format(Math.round(guvData[1].sponsoring))} | ${numberFormatter.format(Math.round(guvData[2].sponsoring))} | ${numberFormatter.format(Math.round(guvData[3].sponsoring))}
+Gesamtertrag | ${numberFormatter.format(Math.round(guvData[1].gesamtertrag))} | ${numberFormatter.format(Math.round(guvData[2].gesamtertrag))} | ${numberFormatter.format(Math.round(guvData[3].gesamtertrag))}
+- Personalaufwand (inkl. Sozialleistungen) | ${numberFormatter.format(Math.round(guvData[1].personal))} | ${numberFormatter.format(Math.round(guvData[2].personal))} | ${numberFormatter.format(Math.round(guvData[3].personal))}
+- Technischer Betriebsaufwand (Server/SaaS) | ${numberFormatter.format(Math.round(guvData[1].tech))} | ${numberFormatter.format(Math.round(guvData[2].tech))} | ${numberFormatter.format(Math.round(guvData[3].tech))}
+- Vertriebs- und Marketingkosten | ${numberFormatter.format(Math.round(guvData[1].marketing))} | ${numberFormatter.format(Math.round(guvData[2].marketing))} | ${numberFormatter.format(Math.round(guvData[3].marketing))}
+- Allgemeine Verwaltung / Legal & Treuhand | ${numberFormatter.format(Math.round(guvData[1].admin))} | ${numberFormatter.format(Math.round(guvData[2].admin))} | ${numberFormatter.format(Math.round(guvData[3].admin))}
+EBITDA | ${numberFormatter.format(Math.round(guvData[1].ebitda))} | ${numberFormatter.format(Math.round(guvData[2].ebitda))} | ${numberFormatter.format(Math.round(guvData[3].ebitda))}
+- Abschreibungen (Technologie/Hardware) | ${numberFormatter.format(Math.round(guvData[1].abschreibungen))} | ${numberFormatter.format(Math.round(guvData[2].abschreibungen))} | ${numberFormatter.format(Math.round(guvData[3].abschreibungen))}
+EBIT | ${numberFormatter.format(Math.round(guvData[1].ebit))} | ${numberFormatter.format(Math.round(guvData[2].ebit))} | ${numberFormatter.format(Math.round(guvData[3].ebit))}
+- Steuern | ${numberFormatter.format(Math.round(guvData[1].steuern))} | ${numberFormatter.format(Math.round(guvData[2].steuern))} | ${numberFormatter.format(Math.round(guvData[3].steuern))}
+Unternehmensergebnis (Reingewinn) | ${numberFormatter.format(Math.round(guvData[1].reingewinn))} | ${numberFormatter.format(Math.round(guvData[2].reingewinn))} | ${numberFormatter.format(Math.round(guvData[3].reingewinn))}
+
+9.5 Liquiditätsplan (Cashflow-Rechnung)
+
+Der Liquiditätsplan überwacht den Cash-Burn und stellt sicher, dass die Expansionsschritte jederzeit durch Finanzierungs-Cashflows gedeckt sind.
+
+* Seed-Zufluss: Der erste grosse Meilenstein erfolgt durch das Closing der Seed-Runde im Quartal ${dummyData.seedQuarter} in Höhe von CHF ${(seedBetrag / 1000000).toLocaleString('de-CH')} Mio., was den operativen Markteintritt in der Schweiz vollständig absichert.
+* Series A-Zufluss: Zur Beschleunigung des internationalen Wachstums und zum Ausbau der On-Demand-Infrastruktur fließt im Quartal ${dummyData.seriesAQuarter} des ${dummyData.seriesAYear}. Geschäftsjahres die Series A-Runde in Höhe von CHF ${(seriesABetrag / 1000000).toLocaleString('de-CH')} Mio. zu.
+* SaaS-Hebel & Runway: Dank der jährlichen Upfront-Zahlungen der B2B-Kunden profitiert Attaché von einem stark positiven Working Capital. Der kumulierte Cash-Bestand sinkt zu keinem Zeitpunkt unter die kritische Grenze von ${dummyData.baseCaseMonths >= 10 ? 3 : 2} Monaten operativer Fixkosten.
+
+9.6 Kapitalbedarfs- und Finanzierungsplan
+
+Der Gesamtkapitalbedarf bis zum Erreichen der globalen Profitabilität ist in drei klare Finanzierungstranchen unterteilt:
+
+1. Pre-Seed-Runde (Abgeschlossen): CHF ${numberFormatter.format(preSeedAfondPerdu)} als à-fond-perdu-Anschubfinanzierung für die Marktforschung durch Medienunternehmer sowie ein Wandeldarlehen (Bridge) von CHF ${numberFormatter.format(preSeedBridge)} für das MVP-Prototyping.
+2. Seed-Finanzierungsrunde (Aktuelle Phase): Einwerbung von mindestens CHF ${(seedBetrag / 1000000).toFixed(1)} Mio. bis CHF ${(seedBetrag / 1000000 * 1.5).toFixed(1)} Mio. zur Absicherung des Runways bis zum Schweizer Break-even. Abgabe von 20 % der Anteile am Gründungs-Cap-Table.
+3. Series A-Runde (In Vorbereitung): Geplante Aufnahme von CHF ${(seriesABetrag / 1000000).toFixed(1)} Mio. im Geschäftsjahr ${dummyData.seriesAYear}, initiiert durch institutionelle B2B-SaaS- und Growth-Investoren, um die Internationalisierungsachse zu finanzieren.
+4. Option Pool (ESOP): Reservierung von 10 % der Anteile zur langfristigen Incentivierung von Schlüsselpositionen (CTO, Head of Sales, Lead-Analysten).
+
+9.10 Break-Even-Analyse & Szenarien
+
+Die Gewinnschwelle (Schweizer Break-Even) wird plangemäss im ${dummyData.breakEvenYear}. Geschäftsjahr bei Erreichen von ${breakEvenPoint != null ? numberFormatter.format(Math.round(breakEvenPoint.aktiveKunden)) : "—"} Lizenzen überschritten. Die Series A-Finanzierung dient danach als Wachstumsbeschleuniger, um die Profitabilität auf internationaler Ebene zu replizieren.
+
+Zur Absicherung wurden drei Szenarien modelliert:
+
+* Base Case (Erwarteter Verlauf): Erreichen des Schweizer Break-Even nach ${dummyData.baseCaseMonths} Monaten. Erfolgreiches Series A-Closing im Monat ${seriesAMonat} und anschliessender internationaler Rollout mit einer Ziel-EBIT-Marge von ${dummyData.ebitMargeY3} % im Jahr 3.
+* Best Case (Skalierungs-Turbo): Extrem hohe Marktdurchdringung im ersten Jahr über direkte B2B2B-Verbandsrahmenverträge (Low CAC). Der Schweizer Markt trägt sich bereits nach ${dummyData.bestCaseMonths} Monaten selbst. Die Series A-Runde kann zu einer deutlich höheren Unternehmensbewertung als ursprünglich veranschlagt durchgeführt werden.
+* Worst Case (Verzögerte Expansion): Der Schweizer Markteintritt benötigt aufgrund von Spardruck in der Verwaltung ${dummyData.worstCaseMonths} Monate länger bis zur Profitabilität. Das Series A-Closing verschiebt sich nach hinten. Der verlängerte Runway wird durch das gestaffelte Abrufen einer im Gesellschaftervertrag verankerten Meilenstein-Tranche der Seed-Investoren in Höhe von CHF ${numberFormatter.format(spezialtopf)} überbrückt.`;
+
+    navigator.clipboard.writeText(text).then(() => {
+      alert("Text erfolgreich kopiert!");
+    }).catch(err => {
+      console.error("Kopieren fehlgeschlagen: ", err);
+    });
+  };
+
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-[1400px] flex-col gap-4 p-4 2xl:px-8">
       {/* Header */}
@@ -774,14 +940,32 @@ function App() {
           <h1 className="text-[20px] font-bold text-black">Finanzmodell Hektopascal</h1>
           <p className="text-xs font-normal text-black mt-1">Interaktive Planung für 48 Monate (CHF).</p>
         </div>
-        <button
-          type="button"
-          onClick={handleReset}
-          className="border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black transition-shadow hover:shadow-[2px_2px_0px_#000] active:translate-y-[1px] cursor-pointer"
-          title="Alle Werte auf Standard zurücksetzen"
-        >
-          Reset
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={handleSaveTemplate}
+            className="border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black transition-shadow hover:shadow-[2px_2px_0px_#000] active:translate-y-[1px] cursor-pointer"
+            title="Aktuelle Werte als Template speichern"
+          >
+            Speichern
+          </button>
+          <button
+            type="button"
+            onClick={handleLoadTemplate}
+            className="border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black transition-shadow hover:shadow-[2px_2px_0px_#000] active:translate-y-[1px] cursor-pointer"
+            title="Gespeichertes Template laden"
+          >
+            Laden
+          </button>
+          <button
+            type="button"
+            onClick={handleReset}
+            className="border-2 border-black bg-white px-3 py-2 text-sm font-bold text-black transition-shadow hover:shadow-[2px_2px_0px_#000] active:translate-y-[1px] cursor-pointer"
+            title="Alle Werte auf Standard zurücksetzen"
+          >
+            Reset
+          </button>
+        </div>
       </header>
 
       {/* KPIs Grid */}
@@ -1716,9 +1900,22 @@ function App() {
       {activeTab === "dummy" && (
         <div className="space-y-6">
           <article className="border-2 border-black bg-white p-8 hover:shadow-[4px_4px_0px_#000] transition-shadow duration-200">
-            <h2 className="text-[24px] font-bold text-black border-b-4 border-black pb-2 mb-6 uppercase tracking-wider">
-              9. Finanzplan (Zahlenteil)
-            </h2>
+            <div className="flex justify-between items-center border-b-4 border-black pb-2 mb-6">
+              <h2 className="text-[24px] font-bold text-black uppercase tracking-wider">
+                9. Finanzplan (Zahlenteil)
+              </h2>
+              <button
+                type="button"
+                onClick={handleCopyText}
+                className="border-2 border-black bg-white px-3 py-1.5 text-xs font-bold text-black transition-shadow hover:shadow-[2px_2px_0px_#000] active:translate-y-[1px] cursor-pointer flex items-center gap-1.5"
+                title="Gesamtes Kapitel als Text kopieren"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 7.5V6.108c0-1.135.845-2.098 1.976-2.192.373-.03.748-.057 1.123-.08M15.75 18H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08M15.75 18.75v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5A3.375 3.375 0 006.375 7.5H5.25m11.9-3.664A2.251 2.251 0 0015 2.25h-1.5a2.251 2.251 0 00-2.15 1.586m5.8 0c.065.21.1.433.1.664v.75h-6V4.5c0-.231.035-.454.1-.664M6.75 7.5H4.875c-.621 0-1.125.504-1.125 1.125v12c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V16.5a9 9 0 00-9-9z" />
+                </svg>
+                Text kopieren
+              </button>
+            </div>
             <p className="text-sm text-black leading-relaxed mb-6 font-sans">
               Die finanzielle Planung von Attaché spiegelt ein hochskalierbares, technologiegestütztes B2B-Geschäftsmodell wider. Um das volle Marktpotenzial der Executive Intelligence in der Schweiz auszuschöpfen und die Plattform anschliessend international zu skalisieren, ist die Finanzierungsstruktur in drei Phasen unterteilt: <strong>Pre-Seed</strong> (Validierung), <strong>Seed</strong> (Markteintritt & Break-even) und <strong>Series A</strong> (Plattform-Ausbau & Internationalisierung).
             </p>
