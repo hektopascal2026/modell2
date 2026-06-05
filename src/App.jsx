@@ -29,7 +29,7 @@ const RESERVE_CHF = 100_000;
 const clampPercent = (value) => Math.min(100, Math.max(0, value));
 const clampNumber = (value) => (Number.isNaN(value) ? 0 : value);
 
-function LabeledNumberInput({ label, value, onChange, step = 1, min = 0, max }) {
+function LabeledNumberInput({ label, value, onChange, step = 1, min = 0, max, helpText }) {
   const [draft, setDraft] = useState(String(value));
 
   useEffect(() => {
@@ -59,6 +59,7 @@ function LabeledNumberInput({ label, value, onChange, step = 1, min = 0, max }) 
           }
         }}
       />
+      {helpText && <span className="text-xs text-gray-600 font-mono -mt-1">{helpText}</span>}
     </label>
   );
 }
@@ -656,12 +657,14 @@ function App() {
                   value={lohnSenior}
                   onChange={setLohnSenior}
                   step={500}
+                  helpText={`Effektiv: ${currencyFormatter.format(lohnSenior * (1 + sozialabgabenProzent / 100))} / Monat`}
                 />
                 <LabeledNumberInput
                   label="Bruttolohn Junior FTE / Monat (CHF)"
                   value={lohnJunior}
                   onChange={setLohnJunior}
                   step={500}
+                  helpText={`Effektiv: ${currencyFormatter.format(lohnJunior * (1 + sozialabgabenProzent / 100))} / Monat`}
                 />
               </div>
               <div className="grid gap-1 border-2 border-black p-3 bg-[#F5F5F5]">
