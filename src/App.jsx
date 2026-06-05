@@ -94,6 +94,36 @@ function KPI({ title, value, helpText }) {
   );
 }
 
+const INITIAL_SACHKOSTEN_WERTE = {
+  werbung: 6000,
+  grafik: 3000,
+  treuhand: 5000,
+  beratung: 1500,
+  mandate: 500,
+  versicherung: 2000,
+  raum: 4500,
+  verwaltung: 1000,
+  it: 2000,
+  spesen: 100,
+  finanz: 250,
+  reserve: 15,
+};
+
+const SACHKOSTEN_META = [
+  { id: "werbung", label: "Werbeaufwand", desc: "Agenturleistung, Werbung", type: "var", step: 500 },
+  { id: "grafik", label: "Grafik- und Bildaufwand", desc: "Agenturleistung, Rechte", type: "var", step: 200 },
+  { id: "treuhand", label: "Treuhandbüro", desc: "Finanz- und Lohnbuchhaltung", type: "fix", step: 500 },
+  { id: "beratung", label: "Beratungsdienstleistungen", desc: "z.B. Gründung, OE, Vertragswerk", type: "var", step: 100 },
+  { id: "mandate", label: "Mandatsleistungen", desc: "Verwaltungsrat 3 PAX a CHF 2000", type: "var", step: 50 },
+  { id: "versicherung", label: "Versicherungen, Abgaben, Gebühren, Steuern", desc: "z.B. Sach- und Haftpflichtversicherungen, Markenregistrierung, (KK-)Kommissionen", type: "fix", step: 200 },
+  { id: "raum", label: "Raumaufwand", desc: "Miete 2 Büroräume, bis zu 6 fixe Arbeitsplätze und 1 grosser Sitzungsraum bis zu 20 Personen, inkl. Nebenkosten", type: "fix", step: 200 },
+  { id: "verwaltung", label: "Verwaltungsaufwand", desc: "z.B. Büromaterial, Recht- und Revisionshonorare", type: "fix", step: 100 },
+  { id: "it", label: "Informatikaufwand", desc: "z.B. IT-Support CHF 100/h, Geräte, Software, Lizenzen, Telekommunikation, Hosting", type: "fix", step: 200 },
+  { id: "spesen", label: "Spesen", desc: "Reise, Verpflegung, Unterkunft (pro FTE / Monat)", type: "var", step: 10 },
+  { id: "finanz", label: "Finanzaufwand", desc: "Kapitalzinsen, Bankspesen", type: "fix", step: 50 },
+  { id: "reserve", label: "Reserve", desc: "Prozentsatz des Sach- und Dienstleistungsaufwands (%)", type: "var", step: 1, isPercent: true },
+];
+
 const DEFAULTS = {
   seedBetrag: 1000000,
   seedMonat: 0,
@@ -126,7 +156,7 @@ const DEFAULTS = {
   sozialabgabenProzent: 15.0,
   spezialtopf: 0,
   sachkostenAuto: true,
-  fixkostenManuell: 8000
+  sachkostenWerte: INITIAL_SACHKOSTEN_WERTE
 };
 
 const getStored = (key, fallback) => {
@@ -179,7 +209,7 @@ function App() {
   const [spezialtopf, setSpezialtopf] = useState(() => getStored("spezialtopf", DEFAULTS.spezialtopf));
   
   const [sachkostenAuto, setSachkostenAuto] = useState(() => getStored("sachkostenAuto", DEFAULTS.sachkostenAuto));
-  const [fixkostenManuell, setFixkostenManuell] = useState(() => getStored("fixkostenManuell", DEFAULTS.fixkostenManuell));
+  const [sachkostenWerte, setSachkostenWerte] = useState(() => getStored("sachkostenWerte", DEFAULTS.sachkostenWerte));
 
   useEffect(() => {
     const data = {
@@ -188,7 +218,7 @@ function App() {
       sponsoringJahr1, sponsoringJahr2, sponsoringJahr3, sponsoringJahr4,
       seniorFteJ1, seniorFteJ2, seniorFteJ3, seniorFteJ4,
       juniorFteJ1, juniorFteJ2, juniorFteJ3, juniorFteJ4,
-      lohnSenior, lohnJunior, sozialabgabenProzent, spezialtopf, sachkostenAuto, fixkostenManuell
+      lohnSenior, lohnJunior, sozialabgabenProzent, spezialtopf, sachkostenAuto, sachkostenWerte
     };
     Object.entries(data).forEach(([key, val]) => {
       localStorage.setItem(`hekto_${key}`, JSON.stringify(val));
@@ -199,7 +229,7 @@ function App() {
     sponsoringJahr1, sponsoringJahr2, sponsoringJahr3, sponsoringJahr4,
     seniorFteJ1, seniorFteJ2, seniorFteJ3, seniorFteJ4,
     juniorFteJ1, juniorFteJ2, juniorFteJ3, juniorFteJ4,
-    lohnSenior, lohnJunior, sozialabgabenProzent, spezialtopf, sachkostenAuto, fixkostenManuell
+    lohnSenior, lohnJunior, sozialabgabenProzent, spezialtopf, sachkostenAuto, sachkostenWerte
   ]);
 
   const handleReset = () => {
@@ -234,7 +264,7 @@ function App() {
     setSozialabgabenProzent(DEFAULTS.sozialabgabenProzent);
     setSpezialtopf(DEFAULTS.spezialtopf);
     setSachkostenAuto(DEFAULTS.sachkostenAuto);
-    setFixkostenManuell(DEFAULTS.fixkostenManuell);
+    setSachkostenWerte(DEFAULTS.sachkostenWerte);
   };
 
   const simulation = useMemo(() => {
@@ -324,7 +354,25 @@ function App() {
       const sozialabgaben = bruttolohn * (sozialabgabenProzent / 100);
       const personalkosten = bruttolohn + sozialabgaben;
       personalkostenByMonth[month] = personalkosten;
-      const sachkosten = sachkostenAuto ? personalkosten * 0.25 : fixkostenManuell;
+      let sachkosten = 0;
+      if (sachkostenAuto) {
+        sachkosten = personalkosten * 0.25;
+      } else {
+        const subtotal = 
+          sachkostenWerte.werbung +
+          sachkostenWerte.grafik +
+          sachkostenWerte.treuhand +
+          sachkostenWerte.beratung +
+          sachkostenWerte.mandate +
+          sachkostenWerte.versicherung +
+          sachkostenWerte.raum +
+          sachkostenWerte.verwaltung +
+          sachkostenWerte.it +
+          (sachkostenWerte.spesen * fte) +
+          sachkostenWerte.finanz;
+        const reserve = subtotal * (sachkostenWerte.reserve / 100);
+        sachkosten = subtotal + reserve;
+      }
       const spezialtopfKosten = month <= 36 ? (spezialtopf / 36) : 0;
       const gesamtausgaben = personalkosten + sachkosten + spezialtopfKosten;
       const netBurn = cashwirksameEinnahmen - gesamtausgaben;
@@ -375,7 +423,7 @@ function App() {
     juniorFteJ2,
     juniorFteJ3,
     juniorFteJ4,
-    fixkostenManuell,
+    sachkostenWerte,
     neueKundenJ1,
     neueKundenJ2,
     neueKundenJ3,
@@ -774,12 +822,70 @@ function App() {
                 <span className="text-sm font-semibold text-black">Sachkosten sind 25% der Personalkosten (80/20 Regel)</span>
               </label>
               {!sachkostenAuto && (
-                <LabeledNumberInput
-                  label="Fixkosten pro Monat (CHF)"
-                  value={fixkostenManuell}
-                  onChange={setFixkostenManuell}
-                  step={500}
-                />
+                <div className="border-2 border-black bg-white p-4 space-y-4">
+                  <span className="text-sm font-bold text-black uppercase block border-b-2 border-black pb-1">
+                    Sach- und Dienstleistungsaufwand
+                  </span>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left font-mono text-xs border-collapse">
+                      <thead>
+                        <tr className="border-b-2 border-black bg-[#F5F5F5] text-black">
+                          <th className="p-2 border-r-2 border-black font-bold">Kategorie</th>
+                          <th className="p-2 border-r-2 border-black font-bold">Typ</th>
+                          <th className="p-2 border-r-2 border-black font-bold w-32">Wert / Monat (CHF)</th>
+                          <th className="p-2 font-bold text-right">Info (Effektiv)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {SACHKOSTEN_META.map((meta) => {
+                          const value = sachkostenWerte[meta.id];
+
+                          let effectiveText = "";
+                          if (meta.id === "spesen") {
+                            effectiveText = "var. nach FTE";
+                          } else if (meta.id === "reserve") {
+                            effectiveText = `${value}% Puffer`;
+                          } else {
+                            effectiveText = `${numberFormatter.format(value)} CHF`;
+                          }
+
+                          return (
+                            <tr key={meta.id} className="border-b-2 border-black hover:bg-[#FAF9F6]">
+                              <td className="p-2 border-r-2 border-black font-sans">
+                                <span className="font-semibold text-xs block">{meta.label}</span>
+                                <span className="text-[10px] text-gray-500 block leading-tight">{meta.desc}</span>
+                              </td>
+                              <td className="p-2 border-r-2 border-black uppercase text-[10px] font-bold text-center">
+                                <span className={meta.type === "fix" ? "text-blue-600 bg-blue-50 px-1 border border-blue-600" : "text-amber-600 bg-amber-50 px-1 border border-amber-600"}>
+                                  {meta.type}
+                                </span>
+                              </td>
+                              <td className="p-1 border-r-2 border-black">
+                                <input
+                                  type="number"
+                                  className="w-full border border-black bg-white px-2 py-1 text-sm font-semibold text-black transition-shadow hover:shadow-[1px_1px_0px_#000] focus:outline-none"
+                                  value={value}
+                                  step={meta.step}
+                                  min={0}
+                                  onChange={(event) => {
+                                    const nextVal = clampNumber(Number(event.target.value));
+                                    setSachkostenWerte((prev) => ({
+                                      ...prev,
+                                      [meta.id]: nextVal
+                                    }));
+                                  }}
+                                />
+                              </td>
+                              <td className="p-2 text-right font-semibold">
+                                {effectiveText}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               )}
               <LabeledNumberInput
                 label="Spezialtopf / Einmaliger Puffer (CHF)"
