@@ -95,7 +95,10 @@ function KPI({ title, value, helpText }) {
 }
 
 const DEFAULTS = {
-  startkapital: 1500000,
+  seedBetrag: 1000000,
+  seedMonat: 0,
+  seriesABetrag: 0,
+  seriesAMonat: 12,
   neueKundenJ1: 40,
   neueKundenJ2: 80,
   neueKundenJ3: 120,
@@ -138,7 +141,13 @@ const getStored = (key, fallback) => {
 
 function App() {
   const [activeTab, setActiveTab] = useState("inputs"); // "inputs" | "calc" | "charts"
-  const [startkapital, setStartkapital] = useState(() => getStored("startkapital", DEFAULTS.startkapital));
+  const [seedBetrag, setSeedBetrag] = useState(() => getStored("seedBetrag", DEFAULTS.seedBetrag));
+  const [seedMonat, setSeedMonat] = useState(() => getStored("seedMonat", DEFAULTS.seedMonat));
+  const [seriesABetrag, setSeriesABetrag] = useState(() => getStored("seriesABetrag", DEFAULTS.seriesABetrag));
+  const [seriesAMonat, setSeriesAMonat] = useState(() => getStored("seriesAMonat", DEFAULTS.seriesAMonat));
+  
+  const startkapital = (seedMonat === 0 ? seedBetrag : 0) + (seriesAMonat === 0 ? seriesABetrag : 0);
+
   const [neueKundenJ1, setNeueKundenJ1] = useState(() => getStored("neueKundenJ1", DEFAULTS.neueKundenJ1));
   const [neueKundenJ2, setNeueKundenJ2] = useState(() => getStored("neueKundenJ2", DEFAULTS.neueKundenJ2));
   const [neueKundenJ3, setNeueKundenJ3] = useState(() => getStored("neueKundenJ3", DEFAULTS.neueKundenJ3));
@@ -174,7 +183,7 @@ function App() {
 
   useEffect(() => {
     const data = {
-      startkapital, neueKundenJ1, neueKundenJ2, neueKundenJ3, neueKundenJ4,
+      seedBetrag, seedMonat, seriesABetrag, seriesAMonat, neueKundenJ1, neueKundenJ2, neueKundenJ3, neueKundenJ4,
       preisJ1, preisAbJ2, preisAbJ3, verlaengerungNachJ1, verlaengerungNachJ2, verlaengerungNachJ3,
       sponsoringJahr1, sponsoringJahr2, sponsoringJahr3, sponsoringJahr4,
       seniorFteJ1, seniorFteJ2, seniorFteJ3, seniorFteJ4,
@@ -185,7 +194,7 @@ function App() {
       localStorage.setItem(`hekto_${key}`, JSON.stringify(val));
     });
   }, [
-    startkapital, neueKundenJ1, neueKundenJ2, neueKundenJ3, neueKundenJ4,
+    seedBetrag, seedMonat, seriesABetrag, seriesAMonat, neueKundenJ1, neueKundenJ2, neueKundenJ3, neueKundenJ4,
     preisJ1, preisAbJ2, preisAbJ3, verlaengerungNachJ1, verlaengerungNachJ2, verlaengerungNachJ3,
     sponsoringJahr1, sponsoringJahr2, sponsoringJahr3, sponsoringJahr4,
     seniorFteJ1, seniorFteJ2, seniorFteJ3, seniorFteJ4,
@@ -194,7 +203,10 @@ function App() {
   ]);
 
   const handleReset = () => {
-    setStartkapital(DEFAULTS.startkapital);
+    setSeedBetrag(DEFAULTS.seedBetrag);
+    setSeedMonat(DEFAULTS.seedMonat);
+    setSeriesABetrag(DEFAULTS.seriesABetrag);
+    setSeriesAMonat(DEFAULTS.seriesAMonat);
     setNeueKundenJ1(DEFAULTS.neueKundenJ1);
     setNeueKundenJ2(DEFAULTS.neueKundenJ2);
     setNeueKundenJ3(DEFAULTS.neueKundenJ3);
@@ -239,6 +251,13 @@ function App() {
     let cashbestand = startkapital;
 
     for (let month = 1; month <= MONTHS; month += 1) {
+      let fundingInflow = 0;
+      if (seedMonat === month) {
+        fundingInflow += seedBetrag;
+      }
+      if (seriesAMonat === month) {
+        fundingInflow += seriesABetrag;
+      }
       const year = yearByMonth(month);
       const neueKunden =
         year === 1
@@ -309,7 +328,7 @@ function App() {
       const spezialtopfKosten = month <= 36 ? (spezialtopf / 36) : 0;
       const gesamtausgaben = personalkosten + sachkosten + spezialtopfKosten;
       const netBurn = cashwirksameEinnahmen - gesamtausgaben;
-      cashbestand += netBurn;
+      cashbestand += netBurn + fundingInflow;
  
       points.push({
         month,
@@ -323,6 +342,7 @@ function App() {
         sozialabgaben,
         personalkosten,
         spezialtopfKosten,
+        fundingInflow,
         sponsoringProMonat,
         cashbestand,
       });
@@ -368,7 +388,10 @@ function App() {
     sponsoringJahr2,
     sponsoringJahr3,
     sponsoringJahr4,
-    startkapital,
+    seedBetrag,
+    seedMonat,
+    seriesABetrag,
+    seriesAMonat,
     verlaengerungNachJ1,
     verlaengerungNachJ2,
     verlaengerungNachJ3,
@@ -574,7 +597,57 @@ function App() {
           <article className="border-2 border-black bg-white p-6 transition-shadow hover:shadow-[2px_2px_0px_#000]">
             <h2 className="text-[18px] font-bold text-black border-b-2 border-black pb-2 mb-4">Einnahmen-Treiber</h2>
             <div className="grid gap-4">
-              <LabeledNumberInput label="Startkapital (CHF)" value={startkapital} onChange={setStartkapital} step={5000} />
+              <div className="border-2 border-black bg-[#F5F5F5] p-3 space-y-3">
+                <span className="text-xs font-bold text-black uppercase block">Finanzierungsrunden / Funding</span>
+                
+                <div className="grid grid-cols-2 gap-3 border border-black p-2 bg-white">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-semibold text-black">Seed Runde (CHF)</span>
+                    <input
+                      type="number"
+                      className="w-full border-2 border-black bg-white px-2 py-1 text-sm font-semibold text-black transition-shadow hover:shadow-[1px_1px_0px_#000] focus:outline-none"
+                      value={seedBetrag}
+                      step={50000}
+                      onChange={(event) => setSeedBetrag(clampNumber(Number(event.target.value)))}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-semibold text-black">Seed Monat</span>
+                    <input
+                      type="number"
+                      className="w-full border-2 border-black bg-white px-2 py-1 text-sm font-semibold text-black transition-shadow hover:shadow-[1px_1px_0px_#000] focus:outline-none"
+                      value={seedMonat}
+                      min={0}
+                      max={48}
+                      onChange={(event) => setSeedMonat(clampNumber(Number(event.target.value)))}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 border border-black p-2 bg-white">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-semibold text-black">Series A Runde (CHF)</span>
+                    <input
+                      type="number"
+                      className="w-full border-2 border-black bg-white px-2 py-1 text-sm font-semibold text-black transition-shadow hover:shadow-[1px_1px_0px_#000] focus:outline-none"
+                      value={seriesABetrag}
+                      step={100000}
+                      onChange={(event) => setSeriesABetrag(clampNumber(Number(event.target.value)))}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-semibold text-black">Series A Monat</span>
+                    <input
+                      type="number"
+                      className="w-full border-2 border-black bg-white px-2 py-1 text-sm font-semibold text-black transition-shadow hover:shadow-[1px_1px_0px_#000] focus:outline-none"
+                      value={seriesAMonat}
+                      min={0}
+                      max={48}
+                      onChange={(event) => setSeriesAMonat(clampNumber(Number(event.target.value)))}
+                    />
+                  </div>
+                </div>
+              </div>
               <LabeledSliderInput label="Neue Kunden/Monat Jahr 1" value={neueKundenJ1} onChange={setNeueKundenJ1} max={300} />
               <LabeledSliderInput label="Neue Kunden/Monat Jahr 2" value={neueKundenJ2} onChange={setNeueKundenJ2} max={300} />
               <LabeledSliderInput label="Neue Kunden/Monat Jahr 3" value={neueKundenJ3} onChange={setNeueKundenJ3} max={300} />
