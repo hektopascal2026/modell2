@@ -119,6 +119,7 @@ const DEFAULTS = {
   juniorFteJ4: 12,
   lohnSenior: 10000,
   lohnJunior: 6000,
+  sozialabgabenProzent: 15.0,
   sachkostenAuto: true,
   fixkostenManuell: 8000
 };
@@ -163,6 +164,7 @@ function App() {
 
   const [lohnSenior, setLohnSenior] = useState(() => getStored("lohnSenior", DEFAULTS.lohnSenior));
   const [lohnJunior, setLohnJunior] = useState(() => getStored("lohnJunior", DEFAULTS.lohnJunior));
+  const [sozialabgabenProzent, setSozialabgabenProzent] = useState(() => getStored("sozialabgabenProzent", DEFAULTS.sozialabgabenProzent));
   
   const [sachkostenAuto, setSachkostenAuto] = useState(() => getStored("sachkostenAuto", DEFAULTS.sachkostenAuto));
   const [fixkostenManuell, setFixkostenManuell] = useState(() => getStored("fixkostenManuell", DEFAULTS.fixkostenManuell));
@@ -174,7 +176,7 @@ function App() {
       sponsoringJahr1, sponsoringJahr2, sponsoringJahr3, sponsoringJahr4,
       seniorFteJ1, seniorFteJ2, seniorFteJ3, seniorFteJ4,
       juniorFteJ1, juniorFteJ2, juniorFteJ3, juniorFteJ4,
-      lohnSenior, lohnJunior, sachkostenAuto, fixkostenManuell
+      lohnSenior, lohnJunior, sozialabgabenProzent, sachkostenAuto, fixkostenManuell
     };
     Object.entries(data).forEach(([key, val]) => {
       localStorage.setItem(`hekto_${key}`, JSON.stringify(val));
@@ -185,7 +187,7 @@ function App() {
     sponsoringJahr1, sponsoringJahr2, sponsoringJahr3, sponsoringJahr4,
     seniorFteJ1, seniorFteJ2, seniorFteJ3, seniorFteJ4,
     juniorFteJ1, juniorFteJ2, juniorFteJ3, juniorFteJ4,
-    lohnSenior, lohnJunior, sachkostenAuto, fixkostenManuell
+    lohnSenior, lohnJunior, sozialabgabenProzent, sachkostenAuto, fixkostenManuell
   ]);
 
   const handleReset = () => {
@@ -214,6 +216,7 @@ function App() {
     setJuniorFteJ4(DEFAULTS.juniorFteJ4);
     setLohnSenior(DEFAULTS.lohnSenior);
     setLohnJunior(DEFAULTS.lohnJunior);
+    setSozialabgabenProzent(DEFAULTS.sozialabgabenProzent);
     setSachkostenAuto(DEFAULTS.sachkostenAuto);
     setFixkostenManuell(DEFAULTS.fixkostenManuell);
   };
@@ -294,7 +297,9 @@ function App() {
       }, 0);
       const gesamteinnahmen = umsatzLizenzen + sponsoringProMonat;
       const cashwirksameEinnahmen = lizenzCashInflow + sponsoringProMonat;
-      const personalkosten = (seniorFte * lohnSenior) + (juniorFte * lohnJunior);
+      const bruttolohn = (seniorFte * lohnSenior) + (juniorFte * lohnJunior);
+      const sozialabgaben = bruttolohn * (sozialabgabenProzent / 100);
+      const personalkosten = bruttolohn + sozialabgaben;
       personalkostenByMonth[month] = personalkosten;
       const sachkosten = sachkostenAuto ? personalkosten * 0.25 : fixkostenManuell;
       const gesamtausgaben = personalkosten + sachkosten;
@@ -309,6 +314,8 @@ function App() {
         gesamteinnahmen,
         cashwirksameEinnahmen,
         gesamtausgaben,
+        bruttolohn,
+        sozialabgaben,
         personalkosten,
         sponsoringProMonat,
         cashbestand,
@@ -332,6 +339,7 @@ function App() {
   }, [
     lohnSenior,
     lohnJunior,
+    sozialabgabenProzent,
     seniorFteJ1,
     seniorFteJ2,
     seniorFteJ3,
@@ -655,6 +663,24 @@ function App() {
                   onChange={setLohnJunior}
                   step={500}
                 />
+              </div>
+              <div className="grid gap-1 border-2 border-black p-3 bg-[#F5F5F5]">
+                <div className="flex justify-between text-sm text-black">
+                  <span className="font-bold uppercase text-xs">Sozialabgaben & Vorsorge Arbeitgeber (%)</span>
+                  <span className="font-semibold text-black">{clampPercent(sozialabgabenProzent).toFixed(1)}%</span>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={25}
+                  step={0.5}
+                  value={sozialabgabenProzent}
+                  onChange={(event) => setSozialabgabenProzent(clampPercent(clampNumber(Number(event.target.value))))}
+                  className="w-full accent-[#FF6B6B]"
+                />
+                <span className="text-[11px] text-gray-500 font-mono leading-tight">
+                  AHV/IV/EO: 5.30% | ALV: 1.10% | Pensionskasse (BVG), FAK, UVG, KTG: ca. 7–9%
+                </span>
               </div>
               <label className="flex items-start gap-3 border-2 border-black bg-white p-3 transition-shadow hover:shadow-[2px_2px_0px_#000]">
                 <input
@@ -1057,10 +1083,16 @@ function App() {
                 <hr className="border-black border-dashed" />
                 <div>
                   <span className="font-semibold text-gray-600">Monatliche Ausgaben in Monat {breakEvenMonat}:</span>
-                  <div className="pl-4 mt-1">
-                    Personalkosten: {currencyFormatter.format(breakEvenPoint.personalkosten)} / Monat<br />
-                    Sachkosten: {currencyFormatter.format(breakEvenPoint.gesamtausgaben - breakEvenPoint.personalkosten)} / Monat<br />
-                    <span className="font-bold">Gesamtausgaben: {currencyFormatter.format(breakEvenPoint.gesamtausgaben)} / Monat</span>
+                  <div className="pl-4 mt-1 space-y-1">
+                    <div>
+                      <span className="font-semibold">Personalkosten gesamt:</span> {currencyFormatter.format(breakEvenPoint.personalkosten)} / Monat
+                      <div className="text-[12px] text-gray-600 pl-4 border-l-2 border-black ml-1 mt-0.5 font-mono">
+                        Bruttolöhne: {currencyFormatter.format(breakEvenPoint.bruttolohn)} / Monat<br />
+                        Sozialabgaben & Vorsorge ({clampPercent(sozialabgabenProzent).toFixed(1)}%): {currencyFormatter.format(breakEvenPoint.sozialabgaben)} / Monat
+                      </div>
+                    </div>
+                    <div>Sachkosten: {currencyFormatter.format(breakEvenPoint.gesamtausgaben - breakEvenPoint.personalkosten)} / Monat</div>
+                    <div className="font-bold pt-1 mt-1 border-t border-black">Gesamtausgaben: {currencyFormatter.format(breakEvenPoint.gesamtausgaben)} / Monat</div>
                   </div>
                 </div>
                 <hr className="border-black border-dashed" />
