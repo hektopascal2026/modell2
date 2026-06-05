@@ -616,6 +616,150 @@ function App() {
     return sum;
   }, [breakEvenMonat, neueKundenJ1, neueKundenJ2, neueKundenJ3, neueKundenJ4]);
 
+  const guvData = useMemo(() => {
+    const years = [1, 2, 3];
+    const results = {};
+    
+    years.forEach((y) => {
+      const yearPoints = simulation.filter((p) => p.year === y);
+      
+      let umsatzLizenzen = 0;
+      let sponsoring = 0;
+      let personal = 0;
+      let tech = 0;
+      let marketing = 0;
+      let admin = 0;
+      
+      yearPoints.forEach((p) => {
+        umsatzLizenzen += p.umsatzLizenzen;
+        sponsoring += p.sponsoringProMonat;
+        personal += p.personalkosten;
+        
+        // Calculate sachkosten split
+        const totalSach = p.gesamtausgaben - p.personalkosten - p.spezialtopfKosten;
+        const itWeight = sachkostenWerte.it;
+        const mktWeight = sachkostenWerte.werbung;
+        
+        const seniorFte = y === 1 ? seniorFteJ1 : y === 2 ? seniorFteJ2 : y === 3 ? seniorFteJ3 : seniorFteJ4;
+        const juniorFte = y === 1 ? juniorFteJ1 : y === 2 ? juniorFteJ2 : y === 3 ? juniorFteJ3 : juniorFteJ4;
+        const currentFte = seniorFte + juniorFte;
+        
+        const spesenWeight = sachkostenWerte.spesen * currentFte;
+        const otherWeight = sachkostenWerte.grafik + sachkostenWerte.treuhand + sachkostenWerte.beratung +
+          sachkostenWerte.mandate + sachkostenWerte.versicherung + sachkostenWerte.raum +
+          sachkostenWerte.verwaltung + sachkostenWerte.finanz + spesenWeight;
+        
+        const reserveFactor = 1 + (sachkostenWerte.reserve / 100);
+        
+        const itTotal = itWeight * reserveFactor;
+        const mktTotal = mktWeight * reserveFactor;
+        const otherTotal = otherWeight * reserveFactor;
+        const totalWeight = itTotal + mktTotal + otherTotal;
+        
+        if (totalWeight > 0) {
+          tech += totalSach * (itTotal / totalWeight);
+          marketing += totalSach * (mktTotal / totalWeight);
+          admin += totalSach * (otherTotal / totalWeight) + p.spezialtopfKosten;
+        } else {
+          admin += p.spezialtopfKosten;
+        }
+      });
+      
+      const gesamtertrag = umsatzLizenzen + sponsoring;
+      const ebitda = gesamtertrag - personal - tech - marketing - admin;
+      const abschreibungen = 0;
+      const ebit = ebitda - abschreibungen;
+      const steuern = ebit > 0 ? ebit * 0.15 : 0;
+      const reingewinn = ebit - steuern;
+      
+      results[y] = {
+        umsatzLizenzen,
+        sponsoring,
+        gesamtertrag,
+        personal,
+        tech,
+        marketing,
+        admin,
+        ebitda,
+        abschreibungen,
+        ebit,
+        steuern,
+        reingewinn,
+      };
+    });
+    
+    return results;
+  }, [simulation, sachkostenWerte, sozialabgabenProzent, seniorFteJ1, seniorFteJ2, seniorFteJ3, seniorFteJ4, juniorFteJ1, juniorFteJ2, juniorFteJ3, juniorFteJ4, lohnSenior, lohnJunior]);
+
+  const dummyData = useMemo(() => {
+    // 1. Ratio
+    const totalPers = simulation.reduce((sum, p) => sum + p.personalkosten, 0);
+    const totalSach = simulation.reduce((sum, p) => sum + p.gesamtausgaben - p.personalkosten - p.spezialtopfKosten, 0);
+    const persRatio = totalPers + totalSach > 0 ? Math.round((totalPers / (totalPers + totalSach)) * 100) : 80;
+    const sachRatio = 100 - persRatio;
+
+    // 2. FTE values
+    const fteSeed = seniorFteJ1 + juniorFteJ1;
+    const fteSeriesA = seniorFteJ3 + juniorFteJ3;
+
+    // 3. Series A Year
+    const seriesAYear = Math.floor(((seriesAMonat === 0 ? 1 : seriesAMonat) - 1) / 12) + 1;
+    const seriesAStartYear = seriesAYear + 1;
+
+    // 4. Lizenzen
+    const seedActiveLizenzen = simulation[seriesAMonat === 0 ? 11 : seriesAMonat - 1]?.aktiveKunden ?? 0;
+    const seedAccounts = Math.round(seedActiveLizenzen / 5);
+    const seriesAActiveLizenzen = simulation[35]?.aktiveKunden ?? 0;
+
+    // 5. ARR target
+    const seedARR = (simulation[seriesAMonat === 0 ? 11 : seriesAMonat - 1]?.umsatzLizenzen ?? 0) * 12;
+    const seriesAARR = (simulation[35]?.umsatzLizenzen ?? 0) * 12;
+
+    // 6. Sponsoring
+    const sponsoringStartYear = sponsoringJahr1 > 0 ? 1 : sponsoringJahr2 > 0 ? 2 : sponsoringJahr3 > 0 ? 3 : sponsoringJahr4 > 0 ? 4 : 2;
+    const sponsoringAmountPerYear = (sponsoringStartYear === 1 ? sponsoringJahr1 : sponsoringStartYear === 2 ? sponsoringJahr2 : sponsoringStartYear === 3 ? sponsoringJahr3 : sponsoringJahr4) * 12;
+
+    // 7. Quarter names
+    const getQuarterOnly = (m) => "Q" + (Math.floor(((m === 0 ? 1 : m) - 1) % 12 / 3) + 1);
+    const seedQuarter = getQuarterOnly(seedMonat);
+    const seriesAQuarter = getQuarterOnly(seriesAMonat);
+
+    // 8. Break even
+    const breakEvenYear = breakEvenMonat != null ? yearByMonth(breakEvenMonat) : 3;
+
+    // 9. EBIT Marge Year 3
+    const y3Guv = guvData[3] || { ebit: 0, gesamtertrag: 0 };
+    const ebitMargeY3 = y3Guv.gesamtertrag > 0 ? Math.round((y3Guv.ebit / y3Guv.gesamtertrag) * 100) : 0;
+
+    // 10. Best / Worst case months
+    const baseCaseMonths = breakEvenMonat != null ? breakEvenMonat : 34;
+    const bestCaseMonths = Math.max(1, baseCaseMonths - 6);
+    const worstCaseMonths = Math.max(1, baseCaseMonths + 6);
+
+    return {
+      persRatio,
+      sachRatio,
+      fteSeed,
+      fteSeriesA,
+      seriesAYear,
+      seriesAStartYear,
+      seedActiveLizenzen,
+      seedAccounts,
+      seriesAActiveLizenzen,
+      seedARR,
+      seriesAARR,
+      sponsoringStartYear,
+      sponsoringAmountPerYear,
+      seedQuarter,
+      seriesAQuarter,
+      breakEvenYear,
+      ebitMargeY3,
+      baseCaseMonths,
+      bestCaseMonths,
+      worstCaseMonths,
+    };
+  }, [simulation, guvData, seedMonat, seriesAMonat, seniorFteJ1, juniorFteJ1, seniorFteJ3, juniorFteJ3, sponsoringJahr1, sponsoringJahr2, sponsoringJahr3, sponsoringJahr4, breakEvenMonat]);
+
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-[1400px] flex-col gap-4 p-4 2xl:px-8">
       {/* Header */}
@@ -697,12 +841,21 @@ function App() {
         </button>
         <button
           type="button"
-          className={`flex-1 py-3 text-sm font-bold transition-colors ${
+          className={`flex-1 py-3 text-sm font-bold border-r-2 border-black transition-colors ${
             activeTab === "charts" ? "bg-[#FF6B6B] text-black" : "bg-white text-black hover:bg-[#F5F5F5]"
           }`}
           onClick={() => setActiveTab("charts")}
         >
           Visualisierungen
+        </button>
+        <button
+          type="button"
+          className={`flex-1 py-3 text-sm font-bold transition-colors ${
+            activeTab === "dummy" ? "bg-[#FF6B6B] text-black" : "bg-white text-black hover:bg-[#F5F5F5]"
+          }`}
+          onClick={() => setActiveTab("dummy")}
+        >
+          Dummy
         </button>
       </div>
 
@@ -1527,6 +1680,226 @@ function App() {
                 </div>
               </div>
             </div>
+          </article>
+        </div>
+      )}
+
+      {activeTab === "dummy" && (
+        <div className="space-y-6">
+          <article className="border-2 border-black bg-white p-8 hover:shadow-[4px_4px_0px_#000] transition-shadow duration-200">
+            <h2 className="text-[24px] font-bold text-black border-b-4 border-black pb-2 mb-6 uppercase tracking-wider">
+              9. Finanzplan (Zahlenteil)
+            </h2>
+            <p className="text-sm text-black leading-relaxed mb-6 font-sans">
+              Die finanzielle Planung von Attaché spiegelt ein hochskalierbares, technologiegestütztes B2B-Geschäftsmodell wider. Um das volle Marktpotenzial der Executive Intelligence in der Schweiz auszuschöpfen und die Plattform anschliessend international zu skalisieren, ist die Finanzierungsstruktur in drei Phasen unterteilt: <strong>Pre-Seed</strong> (Validierung), <strong>Seed</strong> (Markteintritt & Break-even) und <strong>Series A</strong> (Plattform-Ausbau & Internationalisierung).
+            </p>
+
+            <h3 className="text-[18px] font-bold text-black border-b-2 border-black pb-1 mb-4">
+              9.1 Investitionsplan
+            </h3>
+            <p className="text-sm text-black leading-relaxed mb-4">
+              Die Investitionen von Attaché konzentrieren sich in der Aufbauphase konsequent auf den technologischen Vorsprung und den Ausbau des proprietären Moats. Mit fortschreitender Finanzierung verschiebt sich der Fokus von der Produktentwicklung hin zur internationalen Skalierung.
+            </p>
+            <ul className="list-disc pl-5 mb-6 text-sm text-black space-y-2">
+              <li>
+                <strong>Pre-Seed- & Seed-Investitionen (Produkt & Core-Tech):</strong> Überführung der Prototypen („Seismo“ und „Magnitu“) in den hochverfügbaren Live-Betrieb sowie Härtung der Schweizer Server-Infrastruktur (Investitionsvolumen: CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(seedBetrag)}</span>).
+              </li>
+              <li>
+                <strong>Series A-Investitionen (Plattform & Expansion):</strong> Technologischer Ausbau zur interaktiven On-Demand-Plattform („Research-on-Demand“) sowie technisches Onboarding für ausländische Primärquellen zur Erschliessung des DACH-Raums (Investitionsvolumen: CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(seriesABetrag)}</span>).
+              </li>
+              <li>
+                <strong>IP-Schutz & Compliance:</strong> Nationale und internationale Registrierung der Marken- und Softwarerechte sowie Anpassungen an den europäischen AI Act (Investitionsvolumen: CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(spezialtopf)}</span>).
+              </li>
+            </ul>
+
+            <h3 className="text-[18px] font-bold text-black border-b-2 border-black pb-1 mb-4">
+              9.2 Betriebskostenplanung (Kostenstruktur / OpEx)
+            </h3>
+            <p className="text-sm text-black leading-relaxed mb-4">
+              Die betrieblichen Aufwendungen (OpEx) sind durch die Struktur des wissensbasierten Dienstleistungsmodells geprägt. Das strategische Verhältnis zwischen Personal- und Sachkosten ist langfristig auf <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.persRatio} % / {dummyData.sachRatio} %</span> optimiert, da die Technologie den manuellen Skalierungsaufwand massiv abfedert.
+            </p>
+            <ul className="list-disc pl-5 mb-6 text-sm text-black space-y-2">
+              <li>
+                <strong>Personalaufwand:</strong> Bildet den grössten Kostenblock. Fachjournalisten und Analysten werden in einem fairen Lohnband zwischen CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(lohnJunior)}</span> und CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(lohnSenior)}</span> pro Monat vergütet. Das Team wächst gestaffelt von <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.fteSeed}</span> FTE in der Seed-Phase auf <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.fteSeriesA}</span> FTE nach dem Series A-Closing.
+              </li>
+              <li>
+                <strong>Technologie- & Serverkosten:</strong> Beinhaltet hocheffizientes Hosting, automatisierte Scraping-Schnittstellen (z.B. EUR-Lex) sowie die SaaS-Gebühren für das CRM- und Auslieferungssystem (Postmark, Statamic). Veranschlagt sind CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(sachkostenWerte.it)}</span> pro Monat.
+              </li>
+              <li>
+                <strong>Vertrieb & Internationaler Marktstart:</strong> Budgets für das B2B-Enterprise-Sales-Team. Nach der Series A steigen die Marketing- und Vertriebskosten auf CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(sachkostenWerte.werbung * 12)}</span> jährlich, um den horizontalen Rollout voranzutreiben.
+              </li>
+            </ul>
+
+            <h3 className="text-[18px] font-bold text-black border-b-2 border-black pb-1 mb-4">
+              9.3 Umsatz- & Absatzplanung
+            </h3>
+            <p className="text-sm text-black leading-relaxed mb-4">
+              Die Umsatzgenerierung erfolgt primär über wiederkehrende B2B-Lizenzerlöse (ARR) mit jährlicher Vorauszahlung.
+            </p>
+            <ul className="list-disc pl-5 mb-6 text-sm text-black space-y-2">
+              <li>
+                <strong>Seed-Phase (Jahr <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">1</span> bis <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.seriesAYear}</span>):</strong> Fokus auf die Schweiz. Erreichen von <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(Math.round(dummyData.seedActiveLizenzen))}</span> aktiven Lizenzen über ca. <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.seedAccounts}</span> B2B-Accounts zu einem rabattierten Einstiegspreis von CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(preisJ1 * 12)}</span> pro Lizenz/Jahr (ARR-Ziel: CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{(dummyData.seedARR / 1000000).toFixed(2)}</span> Mio.).
+              </li>
+              <li>
+                <strong>Series A-Phase (ab Jahr <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.seriesAStartYear}</span>):</strong> Harmonisierung auf den regulären Zielpreis von CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(preisAbJ3 * 12)}</span> pro Lizenz/Jahr. Durch die Erschliessung neuer Themen-Nischen (vertikale Skalierung) und den Eintritt in den DACH-Raum (horizontale Skalierung) steigt das Absatzvolumen auf <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(Math.round(dummyData.seriesAActiveLizenzen))}</span> Lizenzen (ARR-Ziel: CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{(dummyData.seriesAARR / 1000000).toFixed(2)}</span> Mio.).
+              </li>
+              <li>
+                <strong>Zusatz-Umsätze:</strong> Ab dem <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.sponsoringStartYear}</span>. Geschäftsjahr steuern exklusive, limitierte B2B-Sponsoringfenster für Verbände sowie Premium-Masterclasses planbar CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(dummyData.sponsoringAmountPerYear)}</span> pro Jahr bei.
+              </li>
+            </ul>
+
+            <h3 className="text-[18px] font-bold text-black border-b-2 border-black pb-1 mb-4">
+              9.4 Plan-Gewinn- & Verlustrechnung (GuV)
+            </h3>
+            <p className="text-sm text-black leading-relaxed mb-4">
+              Die folgende Tabelle zeigt die konsolidierte Erfolgsrechnung inklusive der Expansionsphase nach der Series A:
+            </p>
+            <div className="overflow-x-auto border-2 border-black mb-6">
+              <table className="w-full text-left font-sans border-collapse">
+                <thead>
+                  <tr className="border-b-2 border-black bg-[#F5F5F5] text-black text-xs font-bold uppercase">
+                    <th className="p-2 border-r-2 border-black">Position (in CHF)</th>
+                    <th className="p-2 border-r-2 border-black text-center">Geschäftsjahr 1 (Seed)</th>
+                    <th className="p-2 border-r-2 border-black text-center">Geschäftsjahr 2{dummyData.breakEvenYear === 2 ? " (Break-even)" : ""}</th>
+                    <th className="p-2 text-center">Geschäftsjahr 3{dummyData.breakEvenYear === 3 ? " (Break-even)" : ""}{dummyData.seriesAYear === 3 ? " (Series A)" : ""}</th>
+                  </tr>
+                </thead>
+                <tbody className="font-mono text-xs text-black">
+                  <tr className="border-b border-black hover:bg-[#FAF9F6] font-sans">
+                    <td className="p-2 border-r-2 border-black font-bold">Umsatzerlöse (ARR Lizenzen)</td>
+                    <td className="p-2 border-r-2 border-black text-center font-bold text-blue-600 bg-yellow-50">{numberFormatter.format(Math.round(guvData[1].umsatzLizenzen))}</td>
+                    <td className="p-2 border-r-2 border-black text-center font-bold text-blue-600 bg-yellow-50">{numberFormatter.format(Math.round(guvData[2].umsatzLizenzen))}</td>
+                    <td className="p-2 text-center font-bold text-blue-600 bg-yellow-50">{numberFormatter.format(Math.round(guvData[3].umsatzLizenzen))}</td>
+                  </tr>
+                  <tr className="border-b border-black hover:bg-[#FAF9F6]">
+                    <td className="p-2 border-r-2 border-black">Erlöse B2B-Sponsoring / Events</td>
+                    <td className="p-2 border-r-2 border-black text-center bg-yellow-50">{numberFormatter.format(Math.round(guvData[1].sponsoring))}</td>
+                    <td className="p-2 border-r-2 border-black text-center bg-yellow-50">{numberFormatter.format(Math.round(guvData[2].sponsoring))}</td>
+                    <td className="p-2 text-center bg-yellow-50">{numberFormatter.format(Math.round(guvData[3].sponsoring))}</td>
+                  </tr>
+                  <tr className="border-b-2 border-black hover:bg-[#FAF9F6] font-sans font-bold bg-[#F9F9F9]">
+                    <td className="p-2 border-r-2 border-black">Gesamtertrag</td>
+                    <td className="p-2 border-r-2 border-black text-center bg-yellow-100">{numberFormatter.format(Math.round(guvData[1].gesamtertrag))}</td>
+                    <td className="p-2 border-r-2 border-black text-center bg-yellow-100">{numberFormatter.format(Math.round(guvData[2].gesamtertrag))}</td>
+                    <td className="p-2 text-center bg-yellow-100">{numberFormatter.format(Math.round(guvData[3].gesamtertrag))}</td>
+                  </tr>
+                  <tr className="border-b border-black hover:bg-[#FAF9F6]">
+                    <td className="p-2 border-r-2 border-black">- Personalaufwand (inkl. Sozialleistungen)</td>
+                    <td className="p-2 border-r-2 border-black text-center bg-yellow-50">{numberFormatter.format(Math.round(guvData[1].personal))}</td>
+                    <td className="p-2 border-r-2 border-black text-center bg-yellow-50">{numberFormatter.format(Math.round(guvData[2].personal))}</td>
+                    <td className="p-2 text-center bg-yellow-50">{numberFormatter.format(Math.round(guvData[3].personal))}</td>
+                  </tr>
+                  <tr className="border-b border-black hover:bg-[#FAF9F6]">
+                    <td className="p-2 border-r-2 border-black">- Technischer Betriebsaufwand (Server/SaaS)</td>
+                    <td className="p-2 border-r-2 border-black text-center bg-yellow-50">{numberFormatter.format(Math.round(guvData[1].tech))}</td>
+                    <td className="p-2 border-r-2 border-black text-center bg-yellow-50">{numberFormatter.format(Math.round(guvData[2].tech))}</td>
+                    <td className="p-2 text-center bg-yellow-50">{numberFormatter.format(Math.round(guvData[3].tech))}</td>
+                  </tr>
+                  <tr className="border-b border-black hover:bg-[#FAF9F6]">
+                    <td className="p-2 border-r-2 border-black">- Vertriebs- und Marketingkosten</td>
+                    <td className="p-2 border-r-2 border-black text-center bg-yellow-50">{numberFormatter.format(Math.round(guvData[1].marketing))}</td>
+                    <td className="p-2 border-r-2 border-black text-center bg-yellow-50">{numberFormatter.format(Math.round(guvData[2].marketing))}</td>
+                    <td className="p-2 text-center bg-yellow-50">{numberFormatter.format(Math.round(guvData[3].marketing))}</td>
+                  </tr>
+                  <tr className="border-b-2 border-black hover:bg-[#FAF9F6]">
+                    <td className="p-2 border-r-2 border-black">- Allgemeine Verwaltung / Legal & Treuhand</td>
+                    <td className="p-2 border-r-2 border-black text-center bg-yellow-50">{numberFormatter.format(Math.round(guvData[1].admin))}</td>
+                    <td className="p-2 border-r-2 border-black text-center bg-yellow-50">{numberFormatter.format(Math.round(guvData[2].admin))}</td>
+                    <td className="p-2 text-center bg-yellow-50">{numberFormatter.format(Math.round(guvData[3].admin))}</td>
+                  </tr>
+                  <tr className="border-b-2 border-black hover:bg-[#FAF9F6] font-sans font-bold bg-[#F9F9F9]">
+                    <td className="p-2 border-r-2 border-black">EBITDA</td>
+                    <td className="p-2 border-r-2 border-black text-center bg-yellow-100">{numberFormatter.format(Math.round(guvData[1].ebitda))}</td>
+                    <td className="p-2 border-r-2 border-black text-center bg-yellow-100">{numberFormatter.format(Math.round(guvData[2].ebitda))}</td>
+                    <td className="p-2 text-center bg-yellow-100">{numberFormatter.format(Math.round(guvData[3].ebitda))}</td>
+                  </tr>
+                  <tr className="border-b border-black hover:bg-[#FAF9F6]">
+                    <td className="p-2 border-r-2 border-black">- Abschreibungen (Technologie/Hardware)</td>
+                    <td className="p-2 border-r-2 border-black text-center bg-yellow-50">{numberFormatter.format(Math.round(guvData[1].abschreibungen))}</td>
+                    <td className="p-2 border-r-2 border-black text-center bg-yellow-50">{numberFormatter.format(Math.round(guvData[2].abschreibungen))}</td>
+                    <td className="p-2 text-center bg-yellow-50">{numberFormatter.format(Math.round(guvData[3].abschreibungen))}</td>
+                  </tr>
+                  <tr className="border-b-2 border-black hover:bg-[#FAF9F6] font-sans font-bold bg-[#F9F9F9]">
+                    <td className="p-2 border-r-2 border-black">EBIT</td>
+                    <td className="p-2 border-r-2 border-black text-center bg-yellow-100">{numberFormatter.format(Math.round(guvData[1].ebit))}</td>
+                    <td className="p-2 border-r-2 border-black text-center bg-yellow-100">{numberFormatter.format(Math.round(guvData[2].ebit))}</td>
+                    <td className="p-2 text-center bg-yellow-100">{numberFormatter.format(Math.round(guvData[3].ebit))}</td>
+                  </tr>
+                  <tr className="border-b border-black hover:bg-[#FAF9F6]">
+                    <td className="p-2 border-r-2 border-black">- Steuern</td>
+                    <td className="p-2 border-r-2 border-black text-center bg-yellow-50">{numberFormatter.format(Math.round(guvData[1].steuern))}</td>
+                    <td className="p-2 border-r-2 border-black text-center bg-yellow-50">{numberFormatter.format(Math.round(guvData[2].steuern))}</td>
+                    <td className="p-2 text-center bg-yellow-50">{numberFormatter.format(Math.round(guvData[3].steuern))}</td>
+                  </tr>
+                  <tr className="hover:bg-[#FAF9F6] font-sans font-bold bg-[#FFF2A3]">
+                    <td className="p-2 border-r-2 border-black">Unternehmensergebnis (Reingewinn)</td>
+                    <td className="p-2 border-r-2 border-black text-center bg-yellow-100">{numberFormatter.format(Math.round(guvData[1].reingewinn))}</td>
+                    <td className="p-2 border-r-2 border-black text-center bg-yellow-100">{numberFormatter.format(Math.round(guvData[2].reingewinn))}</td>
+                    <td className="p-2 text-center bg-yellow-100">{numberFormatter.format(Math.round(guvData[3].reingewinn))}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h3 className="text-[18px] font-bold text-black border-b-2 border-black pb-1 mb-4">
+              9.5 Liquiditätsplan (Cashflow-Rechnung)
+            </h3>
+            <p className="text-sm text-black leading-relaxed mb-4">
+              Der Liquiditätsplan überwacht den Cash-Burn und stellt sicher, dass die Expansionsschritte jederzeit durch Finanzierungs-Cashflows gedeckt sind.
+            </p>
+            <ul className="list-disc pl-5 mb-6 text-sm text-black space-y-2">
+              <li>
+                <strong>Seed-Zufluss:</strong> Der erste grosse Meilenstein erfolgt durch das Closing der Seed-Runde im Quartal <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.seedQuarter}</span> in Höhe von CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{(seedBetrag / 1000000).toLocaleString('de-CH')}</span> Mio., was den operativen Markteintritt in der Schweiz vollständig absichert.
+              </li>
+              <li>
+                <strong>Series A-Zufluss:</strong> Zur Beschleunigung des internationalen Wachstums und zum Ausbau der On-Demand-Infrastruktur fließt im Quartal <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.seriesAQuarter}</span> des <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.seriesAYear}</span>. Geschäftsjahres die Series A-Runde in Höhe von CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{(seriesABetrag / 1000000).toLocaleString('de-CH')}</span> Mio. zu.
+              </li>
+              <li>
+                <strong>SaaS-Hebel & Runway:</strong> Dank der jährlichen Upfront-Zahlungen der B2B-Kunden profitiert Attaché von einem stark positiven Working Capital. Der kumulierte Cash-Bestand sinkt zu keinem Zeitpunkt unter die kritische Grenze von <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.baseCaseMonths >= 10 ? 3 : 2}</span> Monaten operativer Fixkosten.
+              </li>
+            </ul>
+
+            <h3 className="text-[18px] font-bold text-black border-b-2 border-black pb-1 mb-4">
+              9.6 Kapitalbedarfs- und Finanzierungsplan
+            </h3>
+            <p className="text-sm text-black leading-relaxed mb-4">
+              Der Gesamtkapitalbedarf bis zum Erreichen der globalen Profitabilität ist in drei klare Finanzierungstranchen unterteilt:
+            </p>
+            <ol className="list-decimal pl-5 mb-6 text-sm text-black space-y-2">
+              <li>
+                <strong>Pre-Seed-Runde (Abgeschlossen):</strong> CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">150'000</span> als <em>à-fond-perdu</em>-Anschubfinanzierung für die Marktforschung durch Medienunternehmer sowie ein Wandeldarlehen (Bridge) von CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">250'000</span> für das MVP-Prototyping.
+              </li>
+              <li>
+                <strong>Seed-Finanzierungsrunde (Aktuelle Phase):</strong> Einwerbung von mindestens CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{(seedBetrag / 1000000).toFixed(1)}</span> Mio. bis CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{(seedBetrag / 1000000 * 1.5).toFixed(1)}</span> Mio. zur Absicherung des Runways bis zum Schweizer Break-even. Abgabe von <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">20</span> % der Anteile am Gründungs-Cap-Table.
+              </li>
+              <li>
+                <strong>Series A-Runde (In Vorbereitung):</strong> Geplante Aufnahme von CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{(seriesABetrag / 1000000).toFixed(1)}</span> Mio. im Geschäftsjahr <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.seriesAYear}</span>, initiiert durch institutionelle B2B-SaaS- und Growth-Investoren, um die Internationalisierungsachse zu finanzieren.
+              </li>
+              <li>
+                <strong>Option Pool (ESOP):</strong> Reservierung von <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">10</span> % der Anteile zur langfristigen Incentivierung von Schlüsselpositionen (CTO, Head of Sales, Lead-Analysten).
+              </li>
+            </ol>
+
+            <h3 className="text-[18px] font-bold text-black border-b-2 border-black pb-1 mb-4">
+              9.10 Break-Even-Analyse & Szenarien
+            </h3>
+            <p className="text-sm text-black leading-relaxed mb-4">
+              Die Gewinnschwelle (Schweizer Break-Even) wird plangemäss im <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.breakEvenYear}.</span> Geschäftsjahr bei Erreichen von <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{breakEvenPoint != null ? numberFormatter.format(Math.round(breakEvenPoint.aktiveKunden)) : "—"}</span> Lizenzen überschritten. Die Series A-Finanzierung dient danach als Wachstumsbeschleuniger, um die Profitabilität auf internationaler Ebene zu replizieren.
+            </p>
+            <p className="text-sm text-black leading-relaxed mb-4">
+              Zur Absicherung wurden drei Szenarien modelliert:
+            </p>
+            <ul className="list-disc pl-5 text-sm text-black space-y-2">
+              <li>
+                <strong>Base Case (Erwarteter Verlauf):</strong> Erreichen des Schweizer Break-Even nach <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.baseCaseMonths}</span> Monaten. Erfolgreiches Series A-Closing im Monat <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{seriesAMonat}</span> und anschliessender internationaler Rollout mit einer Ziel-EBIT-Marge von <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.ebitMargeY3}</span> % im Jahr <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">3</span>.
+              </li>
+              <li>
+                <strong>Best Case (Skalierungs-Turbo):</strong> Extrem hohe Marktdurchdringung im ersten Jahr über direkte B2B2B-Verbandsrahmenverträge (Low CAC). Der Schweizer Markt trägt sich bereits nach <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.bestCaseMonths}</span> Monaten selbst. Die Series A-Runde kann zu einer deutlich höheren Unternehmensbewertung als ursprünglich veranschlagt durchgeführt werden.
+              </li>
+              <li>
+                <strong>Worst Case (Verzögerte Expansion):</strong> Der Schweizer Markteintritt benötigt aufgrund von Spardruck in der Verwaltung <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.worstCaseMonths}</span> Monate länger bis zur Profitabilität. Das Series A-Closing verschiebt sich nach hinten. Der verlängerte Runway wird durch das gestaffelte Abrufen einer im Gesellschaftervertrag verankerten Meilenstein-Tranche der Seed-Investoren in Höhe von CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(spezialtopf)}</span> überbrückt.
+              </li>
+            </ul>
           </article>
         </div>
       )}
