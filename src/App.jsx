@@ -598,6 +598,24 @@ function App() {
     return { results, totalKapitalbedarf };
   }, [simulation]);
 
+  const totalVerkaufteAbosBeiBreakEven = useMemo(() => {
+    if (breakEvenMonat == null) return null;
+    let sum = 0;
+    for (let m = 1; m <= breakEvenMonat; m += 1) {
+      const y = yearByMonth(m);
+      const neueKunden =
+        y === 1
+          ? neueKundenJ1
+          : y === 2
+            ? neueKundenJ2
+            : y === 3
+              ? neueKundenJ3
+              : neueKundenJ4;
+      sum += neueKunden;
+    }
+    return sum;
+  }, [breakEvenMonat, neueKundenJ1, neueKundenJ2, neueKundenJ3, neueKundenJ4]);
+
   return (
     <main className="mx-auto flex min-h-screen w-full max-w-[1400px] flex-col gap-4 p-4 2xl:px-8">
       {/* Header */}
@@ -633,38 +651,18 @@ function App() {
           helpText="Kundenbestand im ersten Monat mit Einnahmen ≥ Ausgaben."
         />
         <KPI
-          title="MRR (Monat 36)"
-          value={currencyFormatter.format(month36.umsatzLizenzen)}
-          helpText="Monatlicher wiederkehrender Lizenzumsatz."
-        />
-        <KPI
-          title="Liquiditätspuffer (Monat 36)"
-          value={currencyFormatter.format(month36.liquiditaetspuffer)}
-          helpText="Cash minus (100'000 CHF Reserve + Löhne der nächsten 3 Monate)."
-        />
-        <KPI
-          title="Floor-Verletzung"
-          value={ersteFloorVerletzung != null ? `ab Monat ${ersteFloorVerletzung}` : "keine"}
-          helpText="Erster Monat, in dem der Liquiditätspuffer unter 0 fällt."
-        />
-        <KPI
-          title="Cash Runway"
-          value={typeof runwayMonate === "number" ? `${runwayMonate} Monate` : runwayMonate}
-          helpText="Zeitpunkt, bis der Cashbestand negativ wird."
-        />
-        <KPI
-          title="Erforderliches Startkapital"
-          value={currencyFormatter.format(kapitalAnalyse.erforderlichesStartkapital)}
-          helpText="Minimales Startkapital, damit die Mindestliquidität gerade einmal berührt wird."
-        />
-        <KPI
-          title="Gewinnjahr (EBT)"
-          value={gewinnjahrEbt.year ? `Jahr ${gewinnjahrEbt.year}` : "kein Gewinnjahr"}
-          helpText={
-            gewinnjahrEbt.year
-              ? `EBT: ${currencyFormatter.format(gewinnjahrEbt.ebt)}`
-              : "In keinem Jahr ist die Summe aus Einnahmen minus Ausgaben positiv."
+          title="Total verkaufte Abos bei Break Even"
+          value={
+            totalVerkaufteAbosBeiBreakEven != null
+              ? numberFormatter.format(totalVerkaufteAbosBeiBreakEven)
+              : "—"
           }
+          helpText="Summe aller verkauften Abonnements bis zum Break-even-Monat."
+        />
+        <KPI
+          title="Erforderliches Kapital (Seed + Series A)"
+          value={currencyFormatter.format(Math.max(0, seedBetrag + seriesABetrag - kapitalAnalyse.minPuffer))}
+          helpText="Gesamtes benötigtes Kapital (Seed + Series A), um eine Unterschreitung des Liquiditätspuffers zu verhindern."
         />
       </div>
 
