@@ -853,22 +853,22 @@ function App() {
   const handleCopyText = () => {
     const text = `9. Finanzplan (Zahlenteil)
 
-Die finanzielle Planung von Attaché spiegelt ein hochskalierbares, technologiegestütztes B2B-Geschäftsmodell wider. Um das volle Marktpotenzial der Executive Intelligence in der Schweiz auszuschöpfen und die Plattform anschliessend international zu skalisieren, ist die Finanzierungsstruktur in drei Phasen unterteilt: Pre-Seed (Validierung), Seed (Markteintritt & Break-even) und Series A (Plattform-Ausbau & Internationalisierung).
+Die finanzielle Planung von Attaché spiegelt ein hochskalierbares, technologiegestütztes B2B-Geschäftsmodell wider. Um das Marktpotenzial der Executive Intelligence in der Schweiz zu beweisen und die Plattform anschliessend zum break Even zu skalieren, ist die Finanzierungsstruktur in drei Phasen unterteilt: Pre-Seed (Validierung), Seed (Markteintritt & Break-even) und Series A (Konsolidierung).
 
 9.1 Investitionsplan
 
-Die Investitionen von Attaché konzentrieren sich in der Aufbauphase konsequent auf den technologischen Vorsprung und den Ausbau des proprietären Moats. Mit fortschreitender Finanzierung verschiebt sich der Fokus von der Produktentwicklung hin zur internationalen Skalierung.
+Die Investitionen von Attaché konzentrieren sich in der Aufbauphase konsequent auf den technologischen Vorsprung und den Ausbau des proprietären Moats. Mit fortschreitender Finanzierung verschiebt sich der Fokus vom der Produktlaunch hin zu Sales.
 
-* Pre-Seed- & Seed-Investitionen (Produkt & Core-Tech): Überführung der Prototypen („Seismo“ und „Magnitu“) in den Live-Betrieb, Launch des 1. Bezahlbriefings sowie Härtung der technischen Infrastruktur (Investitionsvolumen: CHF ${numberFormatter.format(seedBetrag)}).
-* Ausbau des publizistischen Angebots auf insgesamt drei Bezahlbreifings sowie technologischer Ausbau zur On-Demand-Plattform („Research-on-Demand“) (Investitionsvolumen: CHF ${numberFormatter.format(seriesABetrag)}).
+* Pre-Seed- & Seed-Investitionen (Produkt & Core-Tech): Überführung der Prototypen („Seismo“ und „Magnitu“) in den Live-Betrieb, Launch des Gratis Briefings und des ersten Bezahlbreifings (Investitionsvolumen: CHF ${numberFormatter.format(seedBetrag)}).
+Series A* Ausbau des publizistischen Angebots auf insgesamt drei Bezahlbreifings sowie sowie Härtung der technischen Infrastruktur und redaktionelle Konsolidierung. (Investitionsvolumen: CHF ${numberFormatter.format(seriesABetrag)}).
 
 9.2 Betriebskostenplanung (Kostenstruktur / OpEx)
 
 Die betrieblichen Aufwendungen (OpEx) sind durch die Struktur des wissensbasierten Dienstleistungsmodells geprägt. Das strategische Verhältnis zwischen Personal- und Sachkosten ist langfristig auf ${dummyData.persRatio} % / ${dummyData.sachRatio} % optimiert, da die Technologie den manuellen Skalierungsaufwand massiv abfedert.
 
-* Personalaufwand: Bildet den grössten Kostenblock. Fachjournalisten und Analysten werden in einem fairen Lohnband zwischen CHF ${numberFormatter.format(lohnJunior)} und CHF ${numberFormatter.format(lohnSenior)} pro Monat vergütet. Das Team wächst gestaffelt von ${dummyData.fteSeed} FTE in der Seed-Phase auf ${dummyData.fteSeriesA} FTE nach dem Series A-Closing.
+* Personalaufwand: Bildet den grössten Kostenblock. Fachjournalisten und Analysten werden in einem fairen Lohnband vergütet. Der durchschnittliche Bruttolohn (errechnet als Durchschnitt des Lohnbands, wobei Senior-Lohn = Durchschnitt) beträgt CHF ${numberFormatter.format(lohnSenior)}. Das Team wächst gestaffelt von ${dummyData.fteSeed} FTE in der Seed-Phase auf ${dummyData.fteSeriesA} FTE nach dem Series A-Closing.
 * Technologie- & Serverkosten: Beinhaltet hocheffizientes Hosting sowie die SaaS-Gebühren für das CRM- und Auslieferungssystem (Postmark, Statamic). Veranschlagt sind CHF ${numberFormatter.format(sachkostenWerte.it)} pro Monat.
-* Vertrieb & Internationaler Marktstart: Budgets Series A für das B2B-Enterprise-Sales-Team. Nach der Series A steigen die variablen Marketing- und Vertriebskosten auf CHF ${numberFormatter.format(sachkostenWerte.werbung * 12)} jährlich, um den horizontalen Rollout voranzutreiben.
+* Vertrieb & horizontales Wachstum: Budgets Series A für das B2B-Enterprise-Sales-Team. Nach der Series A steigen die variablen Marketing- und Vertriebskosten auf CHF ${numberFormatter.format(sachkostenWerte.werbung * 12)} jährlich, um den horizontalen Rollout voranzutreiben.
 
 9.3 Umsatz- & Absatzplanung
 
@@ -1916,21 +1916,21 @@ Zur Absicherung wurden drei Szenarien modelliert:
               </button>
             </div>
             <p className="text-sm text-black leading-relaxed mb-6 font-sans">
-              Die finanzielle Planung von Attaché spiegelt ein hochskalierbares, technologiegestütztes B2B-Geschäftsmodell wider. Um das volle Marktpotenzial der Executive Intelligence in der Schweiz auszuschöpfen und die Plattform anschliessend international zu skalisieren, ist die Finanzierungsstruktur in drei Phasen unterteilt: <strong>Pre-Seed</strong> (Validierung), <strong>Seed</strong> (Markteintritt & Break-even) und <strong>Series A</strong> (Plattform-Ausbau & Internationalisierung).
+              Die finanzielle Planung von Attaché spiegelt ein hochskalierbares, technologiegestütztes B2B-Geschäftsmodell wider. Um das Marktpotenzial der Executive Intelligence in der Schweiz zu beweisen und die Plattform anschliessend zum break Even zu skalieren, ist die Finanzierungsstruktur in drei Phasen unterteilt: <strong>Pre-Seed</strong> (Validierung), <strong>Seed</strong> (Markteintritt & Break-even) und <strong>Series A</strong> (Konsolidierung).
             </p>
 
             <h3 className="text-[18px] font-bold text-black border-b-2 border-black pb-1 mb-4">
               9.1 Investitionsplan
             </h3>
             <p className="text-sm text-black leading-relaxed mb-4">
-              Die Investitionen von Attaché konzentrieren sich in der Aufbauphase konsequent auf den technologischen Vorsprung und den Ausbau des proprietären Moats. Mit fortschreitender Finanzierung verschiebt sich der Fokus von der Produktentwicklung hin zur internationalen Skalierung.
+              Die Investitionen von Attaché konzentrieren sich in der Aufbauphase konsequent auf den technologischen Vorsprung und den Ausbau des proprietären Moats. Mit fortschreitender Finanzierung verschiebt sich der Fokus vom der Produktlaunch hin zu Sales.
             </p>
             <ul className="list-disc pl-5 mb-6 text-sm text-black space-y-2">
               <li>
-                <strong>Pre-Seed- & Seed-Investitionen (Produkt & Core-Tech):</strong> Überführung der Prototypen („Seismo“ und „Magnitu“) in den Live-Betrieb, Launch des 1. Bezahlbriefings sowie Härtung der technischen Infrastruktur (Investitionsvolumen: CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(seedBetrag)}</span>).
+                <strong>Pre-Seed- & Seed-Investitionen (Produkt & Core-Tech):</strong> Überführung der Prototypen („Seismo“ und „Magnitu“) in den Live-Betrieb, Launch des Gratis Briefings und des ersten Bezahlbreifings (Investitionsvolumen: CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(seedBetrag)}</span>).
               </li>
               <li>
-                Ausbau des publizistischen Angebots auf insgesamt drei Bezahlbreifings sowie technologischer Ausbau zur On-Demand-Plattform („Research-on-Demand“) (Investitionsvolumen: CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(seriesABetrag)}</span>).
+                <strong>Series A*</strong> Ausbau des publizistischen Angebots auf insgesamt drei Bezahlbreifings sowie sowie Härtung der technischen Infrastruktur und redaktionelle Konsolidierung. (Investitionsvolumen: CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(seriesABetrag)}</span>).
               </li>
             </ul>
 
@@ -1942,13 +1942,13 @@ Zur Absicherung wurden drei Szenarien modelliert:
             </p>
             <ul className="list-disc pl-5 mb-6 text-sm text-black space-y-2">
               <li>
-                <strong>Personalaufwand:</strong> Bildet den grössten Kostenblock. Fachjournalisten und Analysten werden in einem fairen Lohnband zwischen CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(lohnJunior)}</span> und CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(lohnSenior)}</span> pro Monat vergütet. Das Team wächst gestaffelt von <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.fteSeed}</span> FTE in der Seed-Phase auf <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.fteSeriesA}</span> FTE nach dem Series A-Closing.
+                <strong>Personalaufwand:</strong> Bildet den grössten Kostenblock. Fachjournalisten und Analysten werden in einem fairen Lohnband vergütet. Der durchschnittliche Bruttolohn (errechnet als Durchschnitt des Lohnbands, wobei Senior-Lohn = Durchschnitt) beträgt CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(lohnSenior)}</span>. Das Team wächst gestaffelt von <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.fteSeed}</span> FTE in der Seed-Phase auf <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{dummyData.fteSeriesA}</span> FTE nach dem Series A-Closing.
               </li>
               <li>
                 <strong>Technologie- & Serverkosten:</strong> Beinhaltet hocheffizientes Hosting sowie die SaaS-Gebühren für das CRM- und Auslieferungssystem (Postmark, Statamic). Veranschlagt sind CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(sachkostenWerte.it)}</span> pro Monat.
               </li>
               <li>
-                <strong>Vertrieb & Internationaler Marktstart:</strong> Budgets Series A für das B2B-Enterprise-Sales-Team. Nach der Series A steigen die variablen Marketing- und Vertriebskosten auf CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(sachkostenWerte.werbung * 12)}</span> jährlich, um den horizontalen Rollout voranzutreiben.
+                <strong>Vertrieb & horizontales Wachstum:</strong> Budgets Series A für das B2B-Enterprise-Sales-Team. Nach der Series A steigen die variablen Marketing- und Vertriebskosten auf CHF <span className="bg-[#FFE600] text-black font-bold px-1 border border-black">{numberFormatter.format(sachkostenWerte.werbung * 12)}</span> jährlich, um den horizontalen Rollout voranzutreiben.
               </li>
             </ul>
 
